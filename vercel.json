@@ -7,12 +7,10 @@
     }
   ],
   "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "index.js"
-    }
+    { "handle": "filesystem" },
+    { "src": "/api/(.*)", "dest": "index.js" },
+    { "src": "/tambah", "dest": "index.js" },
+    { "src": "/admin", "dest": "index.js" },
+    { "src": "/(.*)", "dest": "index.js" }
   ]
 }
