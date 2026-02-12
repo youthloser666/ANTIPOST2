@@ -14,7 +14,7 @@ const prisma = new PrismaClient();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// PENTING: Sajikan file statis dari folder 'public'
+// Sajikan folder public secara statis
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
@@ -35,14 +35,28 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
-// ==================== 3. API Routes ====================
+// ==================== 3. Routes Halaman HTML ====================
 
-// Halaman Utama (Mencegah "Cannot GET /")
+// Halaman Utama (index.html)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Config Check
+// Halaman Tambah Data / Upload (index2.html)
+// Akses: namaprojek.vercel.app/tambah
+app.get('/tambah', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index2.html'));
+});
+
+// Halaman Admin / Management (index3.html)
+// Akses: namaprojek.vercel.app/admin
+app.get('/admin', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index3.html'));
+});
+
+
+// ==================== 4. API Routes (Data) ====================
+
 app.get('/api/config', (req, res) => {
     res.json({
         cloudName: process.env.CLOUD_NAME,
@@ -64,6 +78,7 @@ app.get('/api/personals', async (req, res) => {
 app.post('/api/personals', upload.single('image'), async (req, res) => {
     try {
         const { name, description } = req.body;
+        // Gunakan path dari cloudinary jika ada file, jika tidak pakai dari body
         const image_path = req.file ? req.file.path : req.body.image_path;
         const public_id = req.file ? req.file.filename : req.body.public_id;
 
@@ -120,18 +135,17 @@ app.post('/api/comission_works', upload.single('image'), async (req, res) => {
     }
 });
 
-// ==================== 4. Helper & Final Touch ====================
+// ==================== 5. Helper & Final Touch ====================
 
-// Fix BigInt serialization (Supabase id sering pakai BigInt)
+// Fix BigInt serialization (Sangat krusial untuk Supabase)
 BigInt.prototype.toJSON = function() {
   return this.toString();
 };
 
-// Start Server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`🚀 Server ready at http://localhost:${PORT}`);
 });
 
-// Export untuk Vercel
+// Export untuk Vercel agar tidak Error 500
 module.exports = app;
