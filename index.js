@@ -177,6 +177,18 @@ app.delete('/api/comission_works/:id', async (req, res) => {
     }
 });
 
+// --- API Ambil Satu Data Comission (Untuk Form Edit) ---
+app.get('/api/comission_works/:id', async (req, res) => {
+    try {
+        const data = await prisma.comission_works.findUnique({
+            where: { id: parseInt(req.params.id) }
+        });
+        res.json(data);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
 // ==================== 5. Helper & Final Touch ====================
 BigInt.prototype.toJSON = function() { return this.toString(); };
 
