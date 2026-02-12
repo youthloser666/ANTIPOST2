@@ -3,12 +3,12 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model comission_works {
-  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id          BigInt    @id @default(autoincrement())
   title       String    @db.VarChar(255)
   description String?   @db.Text
   image_path  String?   @db.VarChar(255)
@@ -18,17 +18,17 @@ model comission_works {
 }
 
 model failed_jobs {
-  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  id         BigInt   @id @default(autoincrement())
   uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
   connection String   @db.Text
   queue      String   @db.Text
-  payload    String   @db.LongText
-  exception  String   @db.LongText
+  payload    String   @db.Text
+  exception  String   @db.Text
   failed_at  DateTime @default(now()) @db.Timestamp(0)
 }
 
 model migrations {
-  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  id        Int    @id @default(autoincrement())
   migration String @db.VarChar(255)
   batch     Int
 }
@@ -40,9 +40,9 @@ model password_resets {
 }
 
 model personal_access_tokens {
-  id             BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id             BigInt    @id @default(autoincrement())
   tokenable_type String    @db.VarChar(255)
-  tokenable_id   BigInt    @db.UnsignedBigInt
+  tokenable_id   BigInt    
   name           String    @db.VarChar(255)
   token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
   abilities      String?   @db.Text
@@ -55,7 +55,7 @@ model personal_access_tokens {
 }
 
 model personals {
-  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id          BigInt    @id @default(autoincrement())
   name        String    @db.VarChar(255)
   description String?   @db.Text
   image_path  String?   @db.VarChar(255)
@@ -65,7 +65,7 @@ model personals {
 }
 
 model users {
-  id                BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  id                BigInt    @id @default(autoincrement())
   name              String    @db.VarChar(255)
   email             String    @unique(map: "users_email_unique") @db.VarChar(255)
   email_verified_at DateTime? @db.Timestamp(0)
