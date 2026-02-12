@@ -7,12 +7,16 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
 const app = express();
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  log: ['query', 'info', 'warn', 'error'],
+});
 
 // ==================== 1. Middleware & Static Files ====================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // ==================== 2. Konfigurasi Cloudinary ====================
 cloudinary.config({
@@ -42,7 +46,7 @@ app.get('/admin', (req, res) => res.sendFile(path.join(__dirname, 'public', 'ind
 app.get('/api/config', (req, res) => {
     res.json({
         cloudName: process.env.CLOUD_NAME,
-        uploadPreset: process.env.UPLOAD_PRESET,
+        uploadPreset: process.env.UPLOAD_PRESET || 'ml_default', // Fallback ke ml_default
         apiKey: process.env.API_KEY
     });
 });
