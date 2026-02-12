@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Portofolio</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input { margin-bottom: 10px; width: 300px; padding: 8px; }
+        button { padding: 10px 20px; background: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0052a3; }
+        #preview { width: 200px; display: none; margin-top: 10px; border-radius: 5px; }
+        .upload-form { display: flex; gap: 10px; align-items: center; margin-bottom: 15px; }
+        .success-message { color: green; margin-top: 10px; }
+        .error-message { color: red; margin-top: 10px; }
+        .progress { display: none; width: 100%; height: 20px; background: #eee; border-radius: 10px; margin-top: 10px; overflow: hidden; }
+        .progress-bar { height: 100%; background: #0066cc; width: 0%; transition: width 0.3s; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>📤 PERSONAL WORKS</h2>
+        <div class="upload-form">
+            <input type="hidden" id="personalId" />
+            <input type="hidden" id="personalImageUrl" />
+            <input type="text" id="nameInput" placeholder="TITLE" />
+            <input type="file" id="fileInput" accept="image/*" />
+            <button id="uploadBtn" onclick="uploadToCloudinary()">Upload</button>
+            <button id="cancelBtn" style="display:none; background:#777; margin-left:6px;" onclick="cancelEdit()">Cancel</button>
+        </div>
+        <div class="progress" id="progress">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        <p id="status"></p>
+        <img id="preview" src="" alt="Preview">
+    </div>
+
+    <div class="card">
+        <h2>Gallery — PERSONAL WORKS</h2>
+        <div id="gallery" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 15px;">
+            <p>Memuat data...</p>
+        </div>
+    </div>
+
+    <script>
+        let cloudConfig = {};
+
+        // Muat config Cloudinary dari server
+        async function loadConfig() {
+            try {
+                console.log('📡 Loading config...');
+                const response = await fetch('/api/config', {
+                    headers: {
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                cloudConfig = await response.json();
+                console.log('✅ Config loaded:', cloudConfig);
+                
+                if (!cloudConfig.cloudName) {
+                    throw new Error('CLOUD_NAME missing');
+                }
+            } catch (error) {
+                console.error("❌ Config error:", error);
+                document.getElementById('status').innerHTML = `<span class="error-message">❌ Config error: ${error.message}</span>`;
+            }
+        }
+
+        // Upload langsung ke Cloudinary via backend
+        async function uploadToCloudinary() {
+            const nameInputValue = document.getElementById('nameInput').value.trim();
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('status');
+            const preview = document.getElementById('preview');
+            const progress = document.getElementById('progress');
+            const progressBar = document.getElementById('progressBar');
+            const personalId = document.getElementById('personalId').value || null;
+            const existingImageUrl = document.getElementById('personalImageUrl').value || null;
+
+            if (!nameInputValue) {
+                status.innerHTML = '<span class="error-message">⚠️ Masukkan nama portofolio dulu!</span>';
+                return;
+            }
+
+            // If editing and no new file selected -> directly update DB
+            if (personalId && !fileInput.files.length) {
+                status.innerHTML = '<span>🔄 Menyimpan perubahan...</span>';
+                await saveToDatabase(nameInputValue, existingImageUrl, status, personalId);
+                return;
+            }
+
+            if (!fileInput.files.length) {
+                status.innerHTML = '<span class="error-message">⚠️ Pilih file gambar dulu!</span>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file); // backend expects 'image'
+
+            try {
+                status.innerHTML = '<span>🔄 Uploading...</span>';
+                progress.style.display = 'block';
+                progressBar.style.width = '0%';
+
+                const xhr = new XMLHttpRequest();
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const percentComplete = (e.loaded / e.total) * 100;
+                        progressBar.style.width = percentComplete + '%';
+                        console.log(`Upload progress: ${Math.round(percentComplete)}%`);
+                    }
+                });
+
+                xhr.addEventListener('load', async () => {
+                    console.log('Response status:', xhr.status);
+                    console.log('Response:', xhr.responseText);
+
+                    if (xhr.status === 200) {
+                        try {
+                            const result = JSON.parse(xhr.responseText);
+                            const imageUrl = result.imageUrl;
+                            const publicId = result.public_id || null;
+
+                            if (!imageUrl) {
+                                throw new Error('No imageUrl in response');
+                            }
+
+                            console.log('✅ Upload berhasil:', imageUrl, publicId);
+                            status.innerHTML = '<span class="success-message">✅ Berhasil upload ke Cloudinary!</span>';
+                            preview.src = imageUrl;
+                            preview.style.display = 'block';
+                            progress.style.display = 'none';
+
+                            // Simpan ke database (if editing, pass id)
+                            await saveToDatabase(nameInputValue, imageUrl, status, personalId, publicId);
+
+                            // Reset file input when done
+                            fileInput.value = '';
+                            document.getElementById('nameInput').value = '';
+                        } catch (e) {
+                            console.error('❌ Parse error:', e);
+                            status.innerHTML = `<span class="error-message">❌ Response parse error: ${e.message}</span>`;
+                            progress.style.display = 'none';
+                        }
+                    } else {
+                        const errorMsg = xhr.responseText || `HTTP ${xhr.status}`;
+                        console.error('❌ Upload failed:', errorMsg);
+                        status.innerHTML = `<span class="error-message">❌ Upload failed: ${errorMsg}</span>`;
+                        progress.style.display = 'none';
+                    }
+                });
+
+                xhr.addEventListener('error', () => {
+                    console.error('❌ Network error');
+                    status.innerHTML = '<span class="error-message">❌ Upload failed. Check your connection.</span>';
+                    progress.style.display = 'none';
+                });
+
+                console.log('🚀 Uploading to backend endpoint...');
+                xhr.open('POST', '/upload');
+                xhr.send(formData);
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                status.innerHTML = `<span class="error-message">❌ Error: ${error.message}</span>`;
+                progress.style.display = 'none';
+            }
+        }
+
+        // Simpan data ke database (CREATE atau UPDATE jika id disertakan)
+        async function saveToDatabase(name, imageUrl, statusElement, id = null, publicId = null) {
+            try {
+                let response;
+
+                if (id) {
+                    // Update existing personal
+                    response = await fetch(`/api/personals/${id}`, {
+                        method: 'PUT',
+                        // use multipart/form-data if replacing image; otherwise JSON is fine
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: name,
+                            image_path: imageUrl,
+                            public_id: publicId || null,
+                            description: `Uploading.....`
+                        })
+                    });
+                } else {
+                    // Create new personal
+                    response = await fetch('/api/personals', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            name: name,
+                            image_path: imageUrl,
+                            public_id: publicId || null,
+                            description: `Uploading.....`
+                        })
+                    });
+                }
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Gagal menyimpan data');
+                }
+
+                console.log('✅ Data tersimpan:', data);
+                if (statusElement) {
+                    statusElement.innerHTML = `<span class="success-message">✅ Berhasil! Data disimpan ke database.</span>`;
+                }
+
+                // Reset edit state if any
+                document.getElementById('personalId').value = '';
+                document.getElementById('personalImageUrl').value = '';
+                document.getElementById('uploadBtn').textContent = 'Upload Gambar';
+                document.getElementById('cancelBtn').style.display = 'none';
+
+                setTimeout(loadPersonals, 500);
+            } catch (error) {
+                console.error('❌ Save error:', error);
+                if (statusElement) {
+                    statusElement.innerHTML = `<span class="error-message">❌ Database error: ${error.message}</span>`;
+                }
+            }
+        }
+
+        // Start editing a personal: fetch data and prefill form
+        async function startEdit(id) {
+            try {
+                const status = document.getElementById('status');
+                status.innerHTML = '<span>🔄 Memuat data untuk diedit...</span>';
+                const res = await fetch(`/api/personals/${id}`);
+                if (!res.ok) throw new Error('Gagal memuat data');
+                const data = await res.json();
+
+                document.getElementById('personalId').value = data.id;
+                document.getElementById('nameInput').value = data.name || '';
+                document.getElementById('personalImageUrl').value = data.image_path || '';
+
+                const preview = document.getElementById('preview');
+                if (data.image_path) {
+                    const src = data.image_path.startsWith('http') ? data.image_path : `/images/personals/${data.image_path}`;
+                    preview.src = src;
+                    preview.style.display = 'block';
+                }
+
+                document.getElementById('uploadBtn').textContent = 'Update';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                status.innerHTML = '';
+            } catch (error) {
+                console.error('❌ startEdit error:', error);
+                document.getElementById('status').innerHTML = `<span class="error-message">❌ ${error.message}</span>`;
+            }
+        }
+
+        function cancelEdit() {
+            document.getElementById('personalId').value = '';
+            document.getElementById('personalImageUrl').value = '';
+            document.getElementById('nameInput').value = '';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('uploadBtn').textContent = 'Upload Gambar';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('status').innerHTML = '';
+        }
+
+        async function deletePersonal(id) {
+            if (!confirm('Hapus item ini?')) return;
+            try {
+                const res = await fetch(`/api/personals/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Gagal menghapus');
+                await loadPersonals();
+            } catch (err) {
+                console.error('❌ delete error:', err);
+                document.getElementById('status').innerHTML = `<span class="error-message">❌ ${err.message}</span>`;
+            }
+        }
+
+        async function loadPersonals() {
+            try {
+                const response = await fetch('/api/personals');
+                const data = await response.json();
+                const gallery = document.getElementById('gallery');
+                
+                if (data.length === 0) {
+                    gallery.innerHTML = "<p>No items....</p>";
+                    return;
+                }
+
+                gallery.innerHTML = data.map(p => {
+                    let imageSrc = 'https://via.placeholder.com/200?text=Gambar+Tidak+Ditemukan';
+                    if (p.image_path) {
+                        if (p.image_path.startsWith('http')) {
+                            imageSrc = p.image_path;
+                        } else if (p.image_path.startsWith('/images/')) {
+                            imageSrc = p.image_path;
+                        } else {
+                            imageSrc = `/images/personals/${p.image_path}`;
+                        }
+                    }
+                    
+                    return `
+                        <div style="border: 1px solid #ddd; padding: 10px; border-radius: 12px; background: white; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            <div style="width: 100%; height: 200px; overflow: hidden; border-radius: 8px; background: #f9f9f9;">
+                                <img src="${imageSrc}" 
+                                    alt="${p.name}" 
+                                    style="width: 100%; height: 100%; object-fit: cover;"
+                                    onerror="this.src='https://via.placeholder.com/200?text=Gambar+Tidak+Ditemukan'">
+                            </div>
+                            <h3 style="font-size: 14px; margin: 10px 0 5px 0; color: #333;">${p.name}</h3>
+                            <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+                                <button onclick="startEdit(${p.id})">Edit</button>
+                                <button onclick="deletePersonal(${p.id})" style="background:#c33">Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error("❌ Error loading personals:", error);
+            }
+        }
+
+        // Init
+        window.addEventListener('load', () => {
+            console.log('📄 Page loaded, loading config...');
+            loadConfig().then(() => {
+                console.log('✅ Ready for upload');
+                loadPersonals();
+            });
+        });
+    </script>
+</body>
+</html>

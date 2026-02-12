@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard Portofolio</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        input, select { margin-bottom: 10px; width: 320px; padding: 8px; }
+        button { padding: 8px 14px; background: #0066cc; color: white; border: none; border-radius: 5px; cursor: pointer; margin-right: 5px; }
+        button:hover { background: #0052a3; }
+        button.cancel { background: #777; }
+        button.delete { background: #c33; }
+        #preview { width: 240px; display: none; margin-top: 10px; border-radius: 5px; }
+        .row { display:flex; gap:12px; align-items:center; flex-wrap: wrap; }
+        .success-message { color: green; }
+        .error-message { color: red; }
+        .progress { display: none; width: 100%; height: 8px; background: #eee; border-radius: 6px; overflow: hidden; margin-top: 8px; }
+        .progress-bar { height: 100%; background: #0066cc; width: 0%; }
+        label { display: block; margin-top: 8px; margin-bottom: 4px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2>📤 Comission Works</h2>
+        
+        <div style="margin-bottom: 16px;">
+            <label>Title</label>
+            <input type="hidden" id="cwId">
+            <input id="titleInput" placeholder="Enter title" type="text">
+            
+            <div id="uploadSection" style="margin-top: 8px;">
+                <label>Upload image</label>
+                <input type="file" id="fileInput" accept="image/*">
+                
+                <div class="progress" id="uploadProgress">
+                    <div class="progress-bar" id="uploadBar"></div>
+                </div>
+                
+                <img id="preview" src="" alt="preview">
+            </div>
+            
+            <p id="cwStatus"></p>
+        </div>
+        
+        <div class="row">
+            <button id="saveBtn" onclick="saveComission()">Upload</button>
+            <button class="cancel" id="cancelBtn" style="display:none;" onclick="cancelEdit()">Cancel</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Gallery — Comission Works</h2>
+        <div id="cwGallery" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap:12px;">
+            <p>Loading...</p>
+        </div>
+    </div>
+
+    <script>
+
+
+        // Load all comission works
+        async function loadComissions() {
+            try {
+                const res = await fetch('/api/comission_works');
+                if (!res.ok) throw new Error('Failed to load comissions');
+                const data = await res.json();
+                const gallery = document.getElementById('cwGallery');
+                
+                if (!data || !data.length) { 
+                    gallery.innerHTML = '<p>No items</p>'; 
+                    return; 
+                }
+                
+                gallery.innerHTML = data.map(it => {
+                    const src = (it.image_path && it.image_path.startsWith('http')) 
+                        ? it.image_path 
+                        : (it.image_path ? `/images/comission_works/${it.image_path}` : 'https://via.placeholder.com/200?text=No+Image');
+                    
+                    return `
+                        <div style="border:1px solid #ddd;padding:10px;border-radius:8px;background:#fff;text-align:center;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                            <div style="height:180px; overflow:hidden; border-radius:6px; background:#f7f7f7;">
+                                <img src="${escapeHtml(src)}" alt="${escapeHtml(it.title || '')}" style="width:100%;height:100%;object-fit:cover;" onerror="this.src='https://via.placeholder.com/200?text=Error'">
+                            </div>
+                            <h4 style="margin:8px 0 4px 0; word-break: break-word;">${escapeHtml(it.title || '')}</h4>
+                            <div style="display:flex; gap:4px; justify-content:center; flex-wrap:wrap;">
+                                <button style="padding:6px 10px;font-size:12px;" onclick="startEdit(${it.id})">✎ Edit</button>
+                                <button class="delete" style="padding:6px 10px;font-size:12px;" onclick="deleteComission(${it.id})">✕ Delete</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) { 
+                console.error('Error loading comissions:', err); 
+                document.getElementById('cwGallery').innerHTML = '<p style="color:red;">Error loading items</p>';
+            }
+        }
+
+        function escapeHtml(s) { 
+            return String(s || '').replace(/[&<>\"']/g, c => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[c]); 
+        }
+
+        // Upload file to Cloudinary
+        async function uploadFileToServer(file) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                const fd = new FormData();
+                fd.append('image', file);
+                const progress = document.getElementById('uploadProgress');
+                const bar = document.getElementById('uploadBar');
+                progress.style.display = 'block';
+                bar.style.width = '0%';
+
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (e.lengthComputable) {
+                        const p = Math.round((e.loaded / e.total) * 100);
+                        bar.style.width = p + '%';
+                    }
+                });
+
+                xhr.onreadystatechange = () => {
+                    if (xhr.readyState === 4) {
+                        progress.style.display = 'none';
+                        if (xhr.status === 200) {
+                            try { 
+                                const resp = JSON.parse(xhr.responseText); 
+                                resolve(resp); 
+                            } catch (e) { 
+                                reject(new Error('Invalid response: ' + e.message)); 
+                            }
+                        } else { 
+                            reject(new Error(`Upload failed: HTTP ${xhr.status}`)); 
+                        }
+                    }
+                };
+
+                xhr.onerror = () => reject(new Error('Upload network error'));
+                xhr.open('POST', '/upload');
+                xhr.send(fd);
+            });
+        }
+
+        // Save (create or update) comission work
+        async function saveComission() {
+            const cwId = document.getElementById('cwId').value || null;
+            const title = document.getElementById('titleInput').value.trim();
+            const fileInput = document.getElementById('fileInput');
+            const status = document.getElementById('cwStatus');
+            
+            if (!title) { 
+                status.innerHTML = '<span class="error-message">❌ Title required</span>'; 
+                return; 
+            }
+
+            // If editing, only allow title change (no image change)
+            if (cwId) {
+                try {
+                    status.innerHTML = 'Updating...';
+                    const res = await fetch(`/api/comission_works/${cwId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ title })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Update failed');
+                    
+                    status.innerHTML = '<span class="success-message">✅ Updated!</span>';
+                    setTimeout(() => {
+                        cancelEdit();
+                        loadComissions();
+                    }, 500);
+                } catch (err) {
+                    console.error(err);
+                    status.innerHTML = `<span class="error-message">❌ ${err.message}</span>`;
+                }
+                return;
+            }
+
+            // CREATE: require file upload
+            if (!fileInput || !fileInput.files || !fileInput.files.length) {
+                status.innerHTML = '<span class="error-message">❌ Please select an image to upload</span>';
+                return;
+            }
+
+            try {
+                status.innerHTML = 'Uploading to Cloudinary...';
+                const uploadRes = await uploadFileToServer(fileInput.files[0]);
+                const imagePath = uploadRes.imageUrl;
+                const publicId = uploadRes.public_id || null;
+
+                status.innerHTML = 'Saving to database...';
+                const res = await fetch('/api/comission_works', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        title, 
+                        image_path: imagePath, 
+                        public_id: publicId,
+                        description: null 
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Save failed');
+                
+                status.innerHTML = '<span class="success-message">✅ Created successfully!</span>';
+                setTimeout(() => {
+                    cancelEdit();
+                    loadComissions();
+                }, 500);
+                
+            } catch (err) { 
+                console.error(err); 
+                status.innerHTML = `<span class="error-message">❌ ${err.message}</span>`; 
+            }
+        }
+
+        // Start editing
+        async function startEdit(id) {
+            try {
+                const res = await fetch(`/api/comission_works/${id}`);
+                if (!res.ok) throw new Error('Load failed');
+                const data = await res.json();
+                
+                document.getElementById('cwId').value = data.id;
+                document.getElementById('titleInput').value = data.title || '';
+                document.getElementById('fileInput').value = '';
+                
+                // Hide upload section in edit mode (only allow title change)
+                document.getElementById('uploadSection').style.display = 'none';
+                
+                document.getElementById('saveBtn').textContent = '💾 Update';
+                document.getElementById('cancelBtn').style.display = 'inline-block';
+                document.getElementById('cwStatus').innerHTML = '';
+            } catch (err) { 
+                console.error(err); 
+                document.getElementById('cwStatus').innerHTML = `<span class="error-message">❌ ${err.message}</span>`; 
+            }
+        }
+
+        // Cancel edit
+        function cancelEdit() {
+            document.getElementById('cwId').value = '';
+            document.getElementById('titleInput').value = '';
+            const fi = document.getElementById('fileInput');
+            if (fi) fi.value = '';
+            document.getElementById('preview').style.display = 'none';
+            document.getElementById('uploadSection').style.display = 'block';
+            document.getElementById('saveBtn').textContent = 'Save';
+            document.getElementById('cancelBtn').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadBar').style.width = '0%';
+            document.getElementById('cwStatus').innerHTML = '';
+        }
+
+        // Delete comission work
+        async function deleteComission(id) {
+            if (!confirm('Delete this item? (Will also delete from Cloudinary)')) return;
+            
+            try {
+                const res = await fetch(`/api/comission_works/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Delete failed');
+                await loadComissions();
+            } catch (err) { 
+                console.error(err); 
+                alert('❌ Delete failed: ' + err.message); 
+            }
+        }
+
+        // Initialize on page load
+        window.addEventListener('load', () => {
+            loadComissions();
+        });
+    </script>
+</body>
+</html>
