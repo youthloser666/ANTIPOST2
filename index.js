@@ -151,6 +151,31 @@ app.post('/api/comission_works', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
+// --- API Edit Comission Works ---
+app.put('/api/comission_works/:id', async (req, res) => {
+    try {
+        const { title, description, image_path, public_id } = req.body;
+        const updated = await prisma.comission_works.update({
+            where: { id: parseInt(req.params.id) },
+            data: { title, description, image_path, public_id }
+        });
+        res.json({ success: true, data: updated });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// --- API Hapus Comission Works ---
+app.delete('/api/comission_works/:id', async (req, res) => {
+    try {
+        await prisma.comission_works.delete({
+            where: { id: parseInt(req.params.id) }
+        });
+        res.json({ success: true, message: 'Berhasil dihapus' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // ==================== 5. Helper & Final Touch ====================
 BigInt.prototype.toJSON = function() { return this.toString(); };
