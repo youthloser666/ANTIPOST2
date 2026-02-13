@@ -340,24 +340,47 @@
         }
         requestAnimationFrame(updateParallax);
 
-        // CLOUDINARY OPTIMIZER
-        function optimizeCloudinary(url, mode = 'thumb') {
-            if (!url.includes('cloudinary.com')) return url;
-            const params = mode === 'thumb' ? 'f_auto,q_auto,w_600,h_750,c_fill' : 'f_auto,q_auto';
+        // --- CONFIG & UTILS ---
+        let globalWmText = '';
+
+        async function fetchWmConfig() {
+            try {
+                const res = await fetch('/api/wm-config');
+                const data = await res.json();
+                globalWmText = data.wm_text;
+            } catch (e) { console.error("WM Config Error", e); }
+        }
+
+        function getCloudinaryUrl(url, mode) {
+            if (!url || !url.includes('cloudinary.com')) return url;
+            
+            let params = 'f_auto,q_auto';
+            
+            if (mode === 'thumb') {
+                params = 'f_auto,q_auto,w_600,h_750,c_fill';
+            } else if (mode === 'full') {
+                if (globalWmText) {
+                    params = `f_auto,q_auto,l_text:Arial_20_bold:${encodeURIComponent(globalWmText)},co_white,o_30,g_south_east,x_10,y_10`;
+                }
+            }
+            
             return url.replace('/upload/', `/upload/${params}/`);
         }
 
-        // --- MODAL FEATURES LOGIC ---
+        // --- MODAL FEATURES LOGIC (UPDATED FOR FREE PANNING) ---
         const modal = document.getElementById('image-modal');
         const modalImg = document.getElementById('modal-img');
         const modalCont = document.getElementById('modal-container');
+        
         let isZoomed = false;
         let isDragging = false;
-        let startX, startY, translateX = 0, translateY = 0;
+        let startX = 0, startY = 0;
+        let translateX = 0, translateY = 0;
+        const ZOOM_SCALE = 2.5;
 
         function openView(src, title) {
             modal.style.display = "flex";
-            modalImg.src = src;
+            modalImg.src = getCloudinaryUrl(src, 'full');
             document.getElementById('modal-caption').innerHTML = title;
             document.body.style.overflow = "hidden";
             resetZoom();
@@ -366,45 +389,66 @@
         function resetZoom() {
             isZoomed = false;
             isDragging = false;
-            translateX = 0; translateY = 0;
+            translateX = 0; 
+            translateY = 0;
             modalImg.classList.remove('zoomed');
             modalImg.style.transform = `translate(0px, 0px) scale(1)`;
-            modalCont.style.cursor = 'grab';
+            modalCont.style.cursor = 'zoom-in';
         }
 
-        // Zoom Click
-        modalImg.addEventListener('click', (e) => {
+        // Logic Zoom
+        modalImg.onclick = (e) => {
             e.stopPropagation();
-            isZoomed = !isZoomed;
-            if (isZoomed) {
+            if (!isZoomed) {
+                isZoomed = true;
                 modalImg.classList.add('zoomed');
-                modalImg.style.transform = `scale(2.5)`;
+                modalImg.style.transform = `scale(${ZOOM_SCALE})`;
                 modalCont.style.cursor = 'move';
             } else {
                 resetZoom();
             }
-        });
+        };
 
-        // Drag Logic
-        modalCont.addEventListener('mousedown', e => {
+        // --- MULTI-DEVICE DRAG/PAN LOGIC ---
+        const startDrag = (e) => {
             if (!isZoomed) return;
             isDragging = true;
             modalCont.style.cursor = 'grabbing';
-            startX = e.clientX - translateX;
-            startY = e.clientY - translateY;
-        });
+            // Deteksi koordinat Mouse atau Touch (HP)
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            startX = clientX - translateX;
+            startY = clientY - translateY;
+        };
 
-        window.addEventListener('mousemove', e => {
+        const moveDrag = (e) => {
             if (!isDragging || !isZoomed) return;
-            translateX = e.clientX - startX;
-            translateY = e.clientY - startY;
-            modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(2.5)`;
-        });
+            if (e.cancelable) e.preventDefault(); // Cegah scroll layar di HP
 
-        window.addEventListener('mouseup', () => {
-            isDragging = false;
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            translateX = clientX - startX;
+            translateY = clientY - startY;
+            
+            // Apply transformasi (translate dibagi scale agar movement terasa natural)
+            modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${ZOOM_SCALE})`;
+        };
+
+        const stopDrag = () => { 
+            isDragging = false; 
             if(isZoomed) modalCont.style.cursor = 'move';
-        });
+        };
+
+        // Listener untuk Mouse (PC)
+        modalCont.addEventListener('mousedown', startDrag);
+        window.addEventListener('mousemove', moveDrag);
+        window.addEventListener('mouseup', stopDrag);
+
+        // Listener untuk Touch (Mobile/Tablet)
+        modalCont.addEventListener('touchstart', startDrag, { passive: false });
+        modalCont.addEventListener('touchmove', moveDrag, { passive: false });
+        modalCont.addEventListener('touchend', stopDrag);
 
         // Close functions
         function closeModal() { 
@@ -415,9 +459,6 @@
         document.getElementById('close-modal').onclick = closeModal;
         modal.onclick = (e) => { if(e.target === modal || e.target === modalCont) closeModal(); };
 
-        // Disable Context Menu
-        modalImg.addEventListener('contextmenu', e => e.preventDefault());
-
         // DATA LOADING
         async function loadData(api, gridId, folder) {
             try {
@@ -427,13 +468,14 @@
                 if (items && items.length > 0) {
                     grid.innerHTML = items.map(item => {
                         const rawPath = item.image_path.startsWith('http') ? item.image_path : `/images/${folder}/${item.image_path}`;
-                        return `<img src="${optimizeCloudinary(rawPath, 'thumb')}" alt="${item.name || item.title || 'Untitled'}" onclick="openView('${optimizeCloudinary(rawPath, 'full')}', this.alt)">`;
+                        return `<img src="${getCloudinaryUrl(rawPath, 'thumb')}" alt="${item.name || item.title || 'Untitled'}" onclick="openView('${rawPath}', this.alt)">`;
                     }).join('');
                 }
             } catch (err) { console.error(err); }
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            fetchWmConfig(); // Ambil config watermark
             loadData('/api/personals', 'image-gallery', 'personals');
             loadData('/api/comission_works', 'commission-gallery', 'comission_works');
         });

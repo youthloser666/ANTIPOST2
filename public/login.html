@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
+        .login-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; text-align: center; }
+        h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 15px; font-weight: bold; }
+        button:hover { background: #0052a3; }
+        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; display: none; }
+        .success-badge { color: #2e7d32; background: #e8f5e9; padding: 8px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; display: inline-block; width: 100%; box-sizing: border-box; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>🔐 Admin Access</h2>
+        <div id="error-msg" class="error">Password atau PIN salah!</div>
+        
+        <!-- Step 1: Password -->
+        <div id="step-1">
+            <input type="password" id="passwordInput" placeholder="Password" required autofocus>
+            <button type="button" onclick="validatePassword()">Login</button>
+        </div>
+
+        <!-- Step 2: PIN -->
+        <form id="step-2" action="/login" method="POST" style="display:none;">
+            <div class="success-badge">Password OK ✓</div>
+            <input type="hidden" name="password" id="hiddenPassword">
+            <input type="password" name="pin" id="pinInput" placeholder="PIN (e.g. 1234)" required pattern="[0-9]*" inputmode="numeric">
+            <button type="submit">Done</button>
+        </form>
+    </div>
+    <script>
+        const errorMsg = document.getElementById('error-msg');
+        
+        // Tampilkan pesan error
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.has('error')) {
+            const errType = urlParams.get('error');
+            if (errType === 'timeout') {
+                errorMsg.textContent = 'Sesi Anda telah habis. Silakan login kembali.';
+            }
+            errorMsg.style.display = 'block';
+        }
+
+        async function validatePassword() {
+            const pwd = document.getElementById('passwordInput').value;
+            if (!pwd) return;
+
+            try {
+                const res = await fetch('/api/validate-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: pwd })
+                });
+                const data = await res.json();
+
+                if (data.success) {
+                    // Switch to Step 2
+                    document.getElementById('step-1').style.display = 'none';
+                    document.getElementById('step-2').style.display = 'block';
+                    document.getElementById('hiddenPassword').value = pwd;
+                    errorMsg.style.display = 'none';
+                    
+                    // Focus PIN input
+                    setTimeout(() => document.getElementById('pinInput').focus(), 100);
+                } else {
+                    errorMsg.textContent = 'Password salah!';
+                    errorMsg.style.display = 'block';
+                    document.getElementById('passwordInput').value = '';
+                    document.getElementById('passwordInput').focus();
+                }
+            } catch (e) {
+                console.error(e);
+                errorMsg.textContent = 'Terjadi kesalahan koneksi.';
+                errorMsg.style.display = 'block';
+            }
+        }
+
+        // Allow Enter key for password step
+        document.getElementById('passwordInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                validatePassword();
+            }
+        });
+    </script>
+</body>
+</html>
