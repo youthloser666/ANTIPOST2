@@ -4,7 +4,8 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const sharp = require('sharp');
+const { Readable } = require('stream');
 const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
@@ -241,14 +242,7 @@ cloudinary.config({
     api_secret: process.env.API_SECRET
 });
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'portofolio_kita',
-        allowed_formats: ['jpg', 'png', 'webp', 'jpeg'],
-        transformation: [{ quality: 'auto', fetch_format: 'auto' }]
-    },
-});
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
     storage: storage,
@@ -300,18 +294,36 @@ app.post('/upload', (req, res, next) => {
         }
         next();
     });
-}, (req, res) => {
+}, async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
     
-    const imageUrl = req.file.path;
-    const public_id = req.file.filename || req.file.public_id;
+    try {
+        // Proses gambar dengan Sharp
+        const processedBuffer = await sharp(req.file.buffer)
+            .resize({ width: 2000, withoutEnlargement: true })
+            .toFormat('webp', { quality: 80 })
+            .toBuffer();
 
-    if (!imageUrl || !public_id) {
-        console.error("[Upload] Missing file info:", req.file);
-        return res.status(500).json({ error: 'File uploaded but missing path/filename' });
+        // Upload ke Cloudinary via Stream
+        const result = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                { folder: 'portofolio_kita' },
+                (error, result) => {
+                    if (error) return reject(error);
+                    resolve(result);
+                }
+            );
+            const stream = new Readable();
+            stream.push(processedBuffer);
+            stream.push(null);
+            stream.pipe(uploadStream);
+        });
+
+        res.json({ imageUrl: result.secure_url, public_id: result.public_id });
+    } catch (error) {
+        console.error("[Upload] Processing Error:", error);
+        res.status(500).json({ error: `Processing Error: ${error.message}` });
     }
-
-    res.json({ imageUrl, public_id });
 });
 
 // --- API Personals (Halaman Admin) ---

@@ -61,6 +61,16 @@
 
         /* Checkbox Style */
         .bulk-check { position: absolute; top: 15px; left: 15px; transform: scale(1.5); cursor: pointer; z-index: 10; accent-color: #0066cc; }
+
+        /* --- LIVE PREVIEW MODAL --- */
+        .live-preview-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(4px); animation: fadeIn 0.3s; }
+        .live-preview-content { width: 90%; height: 90%; background: white; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 25px 50px rgba(0,0,0,0.5); display: flex; flex-direction: column; }
+        .live-preview-header { padding: 12px 20px; background: #2c3e50; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .live-preview-title { font-size: 16px; font-weight: bold; letter-spacing: 1px; }
+        .live-preview-content iframe { width: 100%; flex: 1; border: none; background: white; }
+        .close-preview-btn { background: #e74c3c; color: white; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: all 0.2s; font-size: 14px; display: flex; align-items: center; gap: 5px; }
+        .close-preview-btn:hover { background: #c0392b; transform: translateY(-1px); }
+        .close-preview-btn:active { transform: translateY(0); }
     </style>
 </head>
 <body>
@@ -74,6 +84,7 @@
         <button onclick="switchTab('personal')" id="btn-personal">📂 Personal Works</button>
         <button onclick="switchTab('cw')" id="btn-cw">💼 Comission Works</button>
         <button onclick="switchTab('settings')" id="btn-settings">⚙️ Settings</button>
+        <button onclick="openLivePreview()" id="btn-live-preview">👁️ Live Preview</button>
         <button onclick="window.location.href='/logout'" style="margin-top: auto; border-top: 1px solid #34495e;">🚪 Logout</button>
     </div>
 
@@ -208,6 +219,17 @@
     </div>
 
     </div> <!-- End .main-content -->
+
+    <!-- LIVE PREVIEW MODAL -->
+    <div id="live-preview-modal" class="live-preview-modal">
+        <div class="live-preview-content">
+            <div class="live-preview-header">
+                <span class="live-preview-title">WEBSITE LIVE PREVIEW</span>
+                <button class="close-preview-btn" onclick="closeLivePreview()">✕ TUTUP</button>
+            </div>
+            <iframe id="live-preview-frame" src=""></iframe>
+        </div>
+    </div>
 
     <script>
         // --- CONFIG & UTILS ---
@@ -619,8 +641,8 @@
                 const el = document.getElementById(id);
                 if (el) {
                     el.addEventListener('change', function() {
-                        if (this.files[0] && this.files[0].size > 10 * 1024 * 1024) {
-                            alert('Ukuran file maksimal 10MB untuk akun gratis');
+                        if (this.files[0] && this.files[0].size > 50 * 1024 * 1024) {
+                            alert('Ukuran file maksimal 50MB untuk akun gratis');
                             this.value = '';
                         }
                     });
@@ -722,6 +744,19 @@
                 console.error(e);
                 status.innerHTML = '<span class="error-message">❌ Error saving watermark.</span>';
             }
+        }
+
+        // --- LIVE PREVIEW LOGIC ---
+        function openLivePreview() {
+            const modal = document.getElementById('live-preview-modal');
+            const iframe = document.getElementById('live-preview-frame');
+            iframe.src = '/'; // Refresh content
+            modal.style.display = 'flex';
+        }
+
+        function closeLivePreview() {
+            document.getElementById('live-preview-modal').style.display = 'none';
+            document.getElementById('live-preview-frame').src = ''; // Stop loading
         }
     </script>
 </body>
