@@ -5,23 +5,8 @@
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>Antipost Dashboard</h2>
-        </div>
-        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="active">📊 Dashboard</button>
-        <button onclick="switchTab('personal')" id="btn-personal">📂 Personal Works</button>
-        <button onclick="switchTab('cw')" id="btn-cw">💼 Comission Works</button>
-        <button onclick="switchTab('settings')" id="btn-settings">⚙️ Settings</button>
-        <button onclick="openLivePreview()" id="btn-live-preview">👁️ Live Preview</button>
-        <button onclick="window.location.href='/logout'" style="margin-top: auto; border-top: 1px solid #34495e;">🚪 Logout</button>
-    </div>
-
     <!-- MAIN CONTENT AREA -->
     <div class="main-content">
-
     <!-- ==================== DASHBOARD SECTION ==================== -->
     <div id="tab-dashboard" class="tab-content active">
         <div class="card">
@@ -37,7 +22,6 @@
                 </div>
             </div>
         </div>
-
         <div class="card">
             <h2>🕒 Recent Activity</h2>
             <div style="display: flex; gap: 20px; flex-wrap: wrap;">
@@ -56,7 +40,6 @@
             </div>
         </div>
     </div>
-
     <!-- ==================== PERSONAL WORKS SECTION ==================== -->
     <div id="tab-personal" class="tab-content">
         <div class="card">
@@ -79,7 +62,6 @@
         <p id="personalStatus"></p>
         <img id="personalPreview" class="preview-img" src="" alt="Preview">
     </div>
-
     <div class="card">
         <h2>Gallery — PERSONAL WORKS</h2>
         <div id="personalGallery" class="gallery-grid">
@@ -87,7 +69,6 @@
         </div>
         </div>
     </div>
-
     <!-- ==================== COMISSION WORKS SECTION ==================== -->
     <div id="tab-cw" class="tab-content">
         <div class="card">
@@ -110,7 +91,6 @@
         <p id="cwStatus"></p>
         <img id="cwPreview" class="preview-img" src="" alt="Preview">
     </div>
-
     <div class="card">
         <h2>Gallery — COMISSION WORKS</h2>
         <div id="cwGallery" class="gallery-grid">
@@ -118,7 +98,6 @@
         </div>
         </div>
     </div>
-
     <!-- ==================== SETTINGS SECTION ==================== -->
     <div id="tab-settings" class="tab-content">
         <div class="card">
@@ -147,10 +126,12 @@
             </div>
             <p id="wmStatus"></p>
         </div>
+        <div class="card">
+            <h2>🚪 Logout</h2>
+            <button onclick="window.location.href='/logout'" class="delete" style="width: 100%; padding: 15px; font-size: 16px;">Logout Session</button>
+        </div>
     </div>
-
     </div> <!-- End .main-content -->
-
     <!-- LIVE PREVIEW MODAL -->
     <div id="live-preview-modal" class="live-preview-modal">
         <div class="live-preview-content">
@@ -161,6 +142,29 @@
             <iframe id="live-preview-frame" src=""></iframe>
         </div>
     </div>
+    <!-- FLOATING NAVBAR -->
+    <nav class="floating-nav">
+        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-item active">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Dashboard</span>
+        </button>
+        <button onclick="switchTab('personal')" id="btn-personal" class="nav-item">
+            <span class="nav-icon">📂</span>
+            <span class="nav-text">Personal</span>
+        </button>
+        <button onclick="switchTab('cw')" id="btn-cw" class="nav-item">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text">Comission</span>
+        </button>
+        <button onclick="switchTab('settings')" id="btn-settings" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-text">Settings</span>
+        </button>
+        <button onclick="openLivePreview()" id="btn-live-preview" class="nav-item">
+            <span class="nav-icon">👁️</span>
+            <span class="nav-text">Preview</span>
+        </button>
+    </nav>
     <script src="/js/admin-logic.js"></script>
 </body>
 </html>

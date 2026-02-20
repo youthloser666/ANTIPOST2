@@ -175,6 +175,17 @@ header {
     text-transform: uppercase;
 }
 
+.info-list a {
+    text-decoration: none; /* Hapus garis bawah */
+    color: inherit;        /* Ikut warna teks induknya (putih/hitam) */
+    transition: 0.2s;      /* Biar smooth pas di-hover */
+}
+
+.info-list a:hover {
+    opacity: 0.1;          /* Kasih efek redup dikit pas disentuh mouse */
+    letter-spacing: 1px;   /* Kasih efek melebar dikit (opsional, biar gaya) */
+}
+
 /* --- FOOTER BLEEDING --- */
 .footer-banner-container {
     background-color: black;

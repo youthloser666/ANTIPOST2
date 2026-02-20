@@ -7,7 +7,7 @@ function switchTab(tabName) {
     document.getElementById('tab-' + tabName).classList.add('active');
     
     // Update status tombol sidebar
-    document.querySelectorAll('.sidebar button').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
     document.getElementById('btn-' + tabName).classList.add('active');
 }
 
