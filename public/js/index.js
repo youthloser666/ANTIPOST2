@@ -1,3 +1,104 @@
+/* ============================================
+   GSAP ANIMATIONS — tambahan di atas kode original
+   ============================================ */
+gsap.registerPlugin(ScrollTrigger);
+
+window.addEventListener('DOMContentLoaded', () => {
+    gsap.to('header', {
+        translateY: 0, duration: 0.9, ease: 'power3.out', delay: 0.1
+    });
+    gsap.fromTo('.biglogo-wrapper',
+        { opacity: 0, clipPath: 'inset(6% 0 0 0)' },
+        { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 1.3, ease: 'power3.out', delay: 0.45 }
+    );
+    gsap.fromTo('.nav-link',
+        { opacity: 0, y: -8 },
+        { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out', delay: 0.7 }
+    );
+});
+
+function initGalleryReveal() {
+    ['#image-gallery', '#commission-gallery'].forEach(sel => {
+        const imgs = document.querySelectorAll(sel + ' img');
+        if (!imgs.length) return;
+        gsap.to(imgs, {
+            opacity: 1,
+            clipPath: 'inset(0% 0 0 0)',
+            duration: 0.9,
+            ease: 'power3.out',
+            stagger: { amount: 1.0, from: 'start' },
+            scrollTrigger: {
+                trigger: sel,
+                start: 'top 88%',
+                toggleActions: 'play none none reset'
+            }
+        });
+    });
+}
+
+function initInfoReveal() {
+    gsap.to('.info-header', {
+        opacity: 1, y: 0,
+        duration: 0.9, ease: 'power3.out', stagger: 0.18,
+        scrollTrigger: {
+            trigger: '.info-container',
+            start: 'top 85%',
+            toggleActions: 'play none none reset'
+        }
+    });
+    gsap.to('.info-list', {
+        opacity: 1, y: 0,
+        duration: 0.7, ease: 'power2.out', stagger: 0.14,
+        scrollTrigger: {
+            trigger: '.info-container',
+            start: 'top 78%',
+            toggleActions: 'play none none reset'
+        }
+    });
+}
+
+window.addEventListener('load', () => {
+    const _origOpenView   = window.openView;
+    const _origCloseModal = window.closeModal;
+
+    window.openView = function(src, title) {
+        _origOpenView(src, title);
+        const modal    = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-img');
+        const caption  = document.getElementById('modal-caption');
+        const closeBtn = document.getElementById('close-modal');
+        gsap.set(modal,    { opacity: 0 });
+        gsap.set(modalImg, { opacity: 0, scale: 0.94, y: 12 });
+        gsap.set(caption,  { opacity: 0 });
+        gsap.set(closeBtn, { opacity: 0 });
+        gsap.to(modal,    { opacity: 1, duration: 0.28, ease: 'power2.out' });
+        gsap.to(modalImg, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.06 });
+        gsap.to(caption,  { opacity: 1, duration: 0.4, ease: 'power2.out', delay: 0.2 });
+        gsap.to(closeBtn, { opacity: 1, duration: 0.3, delay: 0.22 });
+    };
+
+    window.closeModal = function() {
+        const modal    = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-img');
+        const caption  = document.getElementById('modal-caption');
+        const closeBtn = document.getElementById('close-modal');
+        gsap.to(modal, {
+            opacity: 0, duration: 0.22, ease: 'power2.in',
+            onComplete() {
+                _origCloseModal();
+                gsap.set(modal,    { opacity: 1 });
+                gsap.set(modalImg, { opacity: 0, scale: 0.94, y: 12 });
+                gsap.set(caption,  { opacity: 0 });
+                gsap.set(closeBtn, { opacity: 0 });
+            }
+        });
+    };
+});
+
+/* ============================================
+   KODE ORIGINAL — TIDAK DIUBAH
+   ============================================ */
+
 // PARALLAX LOGIC
 function updateParallax() {
     const scrollY = window.pageYOffset;
@@ -170,8 +271,13 @@ async function loadData(api, gridId, folder) {
 
 window.addEventListener('DOMContentLoaded', () => {
     fetchWmConfig(); // Ambil config watermark
-    loadData('/api/personals', 'image-gallery', 'personals');
-    loadData('/api/comission_works', 'commission-gallery', 'comission_works');
+    Promise.all([
+        loadData('/api/personals', 'image-gallery', 'personals'),
+        loadData('/api/comission_works', 'commission-gallery', 'comission_works')
+    ]).then(() => {
+        initGalleryReveal();
+        initInfoReveal();
+    });
 });
 
 const headerBlock = document.querySelector('.section-divider-block');

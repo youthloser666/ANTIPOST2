@@ -1,28 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Login</title>
+    <title>ANTIPOST — Admin</title>
     <link rel="stylesheet" href="/css/login.css">
 </head>
 <body>
     <div class="login-card">
-        <h2>🔐 Admin Access</h2>
-        <div id="error-msg" class="error">Password atau PIN salah!</div>
-        
+        <h2>Admin Access</h2>
+
+        <div id="error-msg" class="error"></div>
+
         <!-- Step 1: Password -->
         <div id="step-1">
             <input type="password" id="passwordInput" placeholder="Password" required autofocus>
-            <button type="button" onclick="validatePassword()">Login</button>
+            <button type="button" onclick="validatePassword()">Continue</button>
         </div>
 
         <!-- Step 2: PIN -->
         <form id="step-2" action="/login" method="POST" style="display:none;">
-            <div class="success-badge">Password OK ✓</div>
+            <div class="success-badge">Password verified ✓</div>
             <input type="hidden" name="password" id="hiddenPassword">
-            <input type="password" name="pin" id="pinInput" placeholder="PIN (e.g. 1234)" required pattern="[0-9]*" inputmode="numeric">
-            <button type="submit">Done</button>
+            <input type="password" name="pin" id="pinInput" placeholder="PIN" required pattern="[0-9]*" inputmode="numeric">
+            <button type="submit">Authenticate</button>
         </form>
     </div>
+
     <script src="/js/login.js"></script>
 </body>
 </html>

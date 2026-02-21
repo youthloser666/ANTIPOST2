@@ -1,8 +1,116 @@
-body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f2f5; margin: 0; }
-        .login-card { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 320px; text-align: center; }
-        h2 { margin-top: 0; color: #333; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; box-sizing: border-box; font-size: 14px; }
-        button { width: 100%; padding: 12px; background: #0066cc; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 15px; font-weight: bold; }
-        button:hover { background: #0052a3; }
-        .error { color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; display: none; }
-        .success-badge { color: #2e7d32; background: #e8f5e9; padding: 8px; border-radius: 4px; margin-bottom: 15px; font-size: 14px; display: inline-block; width: 100%; box-sizing: border-box; }
+/* ============================================
+   ANTIPOST — LOGIN  |  Clean B&W Minimal
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg:      #f7f7f5;
+    --white:   #ffffff;
+    --black:   #111111;
+    --border:  #e0e0de;
+    --muted:   #999;
+    --error:   #c0392b;
+    --success: #2e7d32;
+    --font: 'Inter', -apple-system, sans-serif;
+}
+
+body {
+    font-family: var(--font);
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 48px 40px;
+    width: 340px;
+}
+
+h2 {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--black);
+    margin-bottom: 36px;
+}
+
+input {
+    display: block;
+    width: 100%;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    background: transparent;
+    color: var(--black);
+    font-family: var(--font);
+    font-size: 14px;
+    font-weight: 300;
+    padding: 12px 0;
+    outline: none;
+    transition: border-color 0.2s;
+    border-radius: 0;
+    margin-bottom: 0;
+}
+
+input:focus { border-bottom-color: var(--black); }
+input::placeholder { color: #bbb; font-size: 13px; }
+
+button {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: var(--black);
+    color: var(--white);
+    border: none;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: var(--font);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 28px;
+    transition: opacity 0.2s;
+}
+
+button:hover { opacity: 0.7; }
+
+.error {
+    font-size: 12px;
+    color: var(--error);
+    padding: 10px 0;
+    margin-bottom: 16px;
+    display: none;
+    border-top: 1px solid currentColor;
+}
+
+.success-badge {
+    font-size: 12px;
+    color: var(--success);
+    padding: 10px 0;
+    margin-bottom: 20px;
+    display: inline-block;
+    width: 100%;
+    border-top: 1px solid currentColor;
+    letter-spacing: 1px;
+}
+
+#step-1, #step-2 { display: flex; flex-direction: column; }
+#step-2 { animation: stepIn 0.25s ease; }
+
+@keyframes stepIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 400px) {
+    .login-card { width: 90vw; padding: 36px 24px; }
+}

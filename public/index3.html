@@ -1,152 +1,158 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Dashboard Portofolio Unified</title>
+    <title>ANTIPOST — Admin Panel</title>
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
-    <!-- MAIN CONTENT AREA -->
     <div class="main-content">
-    <!-- ==================== DASHBOARD SECTION ==================== -->
+
+    <!-- DASHBOARD -->
     <div id="tab-dashboard" class="tab-content active">
         <div class="card">
-            <h2>📊 Dashboard Overview</h2>
+            <h2>Overview</h2>
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-label">Personal Works</div>
-                    <div class="stat-number" id="stat-personal-count">...</div>
+                    <div class="stat-number" id="stat-personal-count">—</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Comission Works</div>
-                    <div class="stat-number" id="stat-cw-count">...</div>
+                    <div class="stat-label">Commission Works</div>
+                    <div class="stat-number" id="stat-cw-count">—</div>
                 </div>
             </div>
         </div>
         <div class="card">
-            <h2>🕒 Recent Activity</h2>
-            <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 300px;">
-                    <h3>Newest Personal Works</h3>
+            <h2>Recent Activity</h2>
+            <div style="display: flex; gap: 32px; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 260px;">
+                    <h3>Personal</h3>
                     <ul class="recent-list" id="recent-personal-list">
-                        <li>Loading...</li>
+                        <li style="font-size:12px; color:#ccc; padding:10px 0;">Loading...</li>
                     </ul>
                 </div>
-                <div style="flex: 1; min-width: 300px;">
-                    <h3>Newest Comission Works</h3>
+                <div style="flex: 1; min-width: 260px;">
+                    <h3>Commission</h3>
                     <ul class="recent-list" id="recent-cw-list">
-                        <li>Loading...</li>
+                        <li style="font-size:12px; color:#ccc; padding:10px 0;">Loading...</li>
                     </ul>
                 </div>
             </div>
         </div>
     </div>
-    <!-- ==================== PERSONAL WORKS SECTION ==================== -->
+
+    <!-- PERSONAL WORKS -->
     <div id="tab-personal" class="tab-content">
         <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-            <h2 style="border: none; padding: 0; margin: 0;">📤 PERSONAL WORKS</h2>
-            <button class="delete" onclick="handleBulkDelete('personal')">🗑️ Delete Selected</button>
-        </div>
-        <div class="upload-form">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 22px;">
+                <h2 style="border:none; padding:0; margin:0;">Personal Works</h2>
+                <button class="delete" onclick="handleBulkDelete('personal')">Delete Selected</button>
+            </div>
             <input type="hidden" id="personalId" />
             <input type="hidden" id="personalImageUrl" />
             <input type="hidden" id="personalPublicId" />
-            <input type="text" id="personalNameInput" placeholder="TITLE (Personal)" />
-            <input type="file" id="personalFileInput" accept="image/*" />
-            <button id="personalUploadBtn" onclick="handlePersonalSubmit()">Upload</button>
-            <button id="personalCancelBtn" class="cancel" style="display:none;" onclick="cancelPersonal()">Cancel</button>
+            <div class="upload-form">
+                <input type="text" id="personalNameInput" placeholder="Title" />
+                <input type="file" id="personalFileInput" accept="image/*" />
+                <button id="personalUploadBtn" onclick="handlePersonalSubmit()">Upload</button>
+                <button id="personalCancelBtn" class="cancel" style="display:none;" onclick="cancelPersonal()">Cancel</button>
+            </div>
+            <div class="progress" id="personalProgress">
+                <div class="progress-bar" id="personalProgressBar"></div>
+            </div>
+            <p id="personalStatus"></p>
+            <img id="personalPreview" class="preview-img" src="" alt="Preview">
         </div>
-        <div class="progress" id="personalProgress">
-            <div class="progress-bar" id="personalProgressBar"></div>
+        <div class="card">
+            <h2>Gallery</h2>
+            <div id="personalGallery" class="gallery-grid">
+                <p style="font-size:12px;color:#ccc;padding:20px;">Loading...</p>
+            </div>
         </div>
-        <p id="personalStatus"></p>
-        <img id="personalPreview" class="preview-img" src="" alt="Preview">
     </div>
-    <div class="card">
-        <h2>Gallery — PERSONAL WORKS</h2>
-        <div id="personalGallery" class="gallery-grid">
-            <p>Memuat data...</p>
-        </div>
-        </div>
-    </div>
-    <!-- ==================== COMISSION WORKS SECTION ==================== -->
+
+    <!-- COMMISSION WORKS -->
     <div id="tab-cw" class="tab-content">
         <div class="card">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">
-            <h2 style="border: none; padding: 0; margin: 0;">📤 COMISSION WORKS</h2>
-            <button class="delete" onclick="handleBulkDelete('commission')">🗑️ Delete Selected</button>
-        </div>
-        <div class="upload-form">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 22px;">
+                <h2 style="border:none; padding:0; margin:0;">Commission Works</h2>
+                <button class="delete" onclick="handleBulkDelete('commission')">Delete Selected</button>
+            </div>
             <input type="hidden" id="cwId" />
             <input type="hidden" id="cwImageUrl" />
             <input type="hidden" id="cwPublicId" />
-            <input type="text" id="cwTitleInput" placeholder="TITLE (Comission)" />
-            <input type="file" id="cwFileInput" accept="image/*" />
-            <button id="cwUploadBtn" onclick="handleComissionSubmit()">Upload</button>
-            <button id="cwCancelBtn" class="cancel" style="display:none;" onclick="cancelComission()">Cancel</button>
+            <div class="upload-form">
+                <input type="text" id="cwTitleInput" placeholder="Title" />
+                <input type="file" id="cwFileInput" accept="image/*" />
+                <button id="cwUploadBtn" onclick="handleComissionSubmit()">Upload</button>
+                <button id="cwCancelBtn" class="cancel" style="display:none;" onclick="cancelComission()">Cancel</button>
+            </div>
+            <div class="progress" id="cwProgress">
+                <div class="progress-bar" id="cwProgressBar"></div>
+            </div>
+            <p id="cwStatus"></p>
+            <img id="cwPreview" class="preview-img" src="" alt="Preview">
         </div>
-        <div class="progress" id="cwProgress">
-            <div class="progress-bar" id="cwProgressBar"></div>
+        <div class="card">
+            <h2>Gallery</h2>
+            <div id="cwGallery" class="gallery-grid">
+                <p style="font-size:12px;color:#ccc;padding:20px;">Loading...</p>
+            </div>
         </div>
-        <p id="cwStatus"></p>
-        <img id="cwPreview" class="preview-img" src="" alt="Preview">
     </div>
-    <div class="card">
-        <h2>Gallery — COMISSION WORKS</h2>
-        <div id="cwGallery" class="gallery-grid">
-            <p>Memuat data...</p>
-        </div>
-        </div>
-    </div>
-    <!-- ==================== SETTINGS SECTION ==================== -->
+
+    <!-- SETTINGS -->
     <div id="tab-settings" class="tab-content">
         <div class="card">
-            <h2>🔐 Change Password</h2>
-            <div style="max-width: 400px;">
-                <input type="password" id="oldPassInput" placeholder="Password Lama" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;" />
-                <input type="password" id="newPassInput" placeholder="Password Baru" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;" />
-                <button onclick="handleChangePassword()">Update Password</button>
+            <h2>Change Password</h2>
+            <div style="max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
+                <input type="password" id="oldPassInput" placeholder="Current password" />
+                <input type="password" id="newPassInput" placeholder="New password" />
+                <button onclick="handleChangePassword()">Update</button>
             </div>
             <p id="settingsStatus"></p>
         </div>
         <div class="card">
-            <h2>🔢 Change PIN</h2>
-            <div style="max-width: 400px;">
-                <input type="password" id="oldPinInput" placeholder="PIN Lama" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;" pattern="[0-9]*" inputmode="numeric" />
-                <input type="password" id="newPinInput" placeholder="PIN Baru" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;" pattern="[0-9]*" inputmode="numeric" />
-                <button onclick="handleChangePin()">Update PIN</button>
+            <h2>Change PIN</h2>
+            <div style="max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
+                <input type="password" id="oldPinInput" placeholder="Current PIN" pattern="[0-9]*" inputmode="numeric" />
+                <input type="password" id="newPinInput" placeholder="New PIN" pattern="[0-9]*" inputmode="numeric" />
+                <button onclick="handleChangePin()">Update</button>
             </div>
             <p id="pinStatus"></p>
         </div>
         <div class="card">
-            <h2>💧 Watermark Settings</h2>
-            <div style="max-width: 400px;">
-                <input type="text" id="wmTextInput" placeholder="Watermark Text (e.g. ANTIPOST)" style="width: 100%; box-sizing: border-box; margin-bottom: 10px;" />
-                <button onclick="handleUpdateWm()">Update Watermark</button>
+            <h2>Watermark</h2>
+            <div style="max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
+                <input type="text" id="wmTextInput" placeholder="e.g. ANTIPOST" />
+                <button onclick="handleUpdateWm()">Update</button>
             </div>
             <p id="wmStatus"></p>
         </div>
         <div class="card">
-            <h2>🚪 Logout</h2>
-            <button onclick="window.location.href='/logout'" class="delete" style="width: 100%; padding: 15px; font-size: 16px;">Logout Session</button>
+            <h2>Session</h2>
+            <button onclick="window.location.href='/logout'" class="delete" style="max-width:160px;">Logout</button>
         </div>
     </div>
-    </div> <!-- End .main-content -->
+
+    </div><!-- /.main-content -->
+
     <!-- LIVE PREVIEW MODAL -->
     <div id="live-preview-modal" class="live-preview-modal">
         <div class="live-preview-content">
             <div class="live-preview-header">
-                <span class="live-preview-title">WEBSITE LIVE PREVIEW</span>
-                <button class="close-preview-btn" onclick="closeLivePreview()">✕ TUTUP</button>
+                <span class="live-preview-title">Live Preview</span>
+                <button class="close-preview-btn" onclick="closeLivePreview()">✕ Close</button>
             </div>
             <iframe id="live-preview-frame" src=""></iframe>
         </div>
     </div>
-    <!-- FLOATING NAVBAR -->
+
+    <!-- FLOATING NAV -->
     <nav class="floating-nav">
         <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-item active">
             <span class="nav-icon">📊</span>
-            <span class="nav-text">Dashboard</span>
+            <span class="nav-text">Board</span>
         </button>
         <button onclick="switchTab('personal')" id="btn-personal" class="nav-item">
             <span class="nav-icon">📂</span>
@@ -154,7 +160,7 @@
         </button>
         <button onclick="switchTab('cw')" id="btn-cw" class="nav-item">
             <span class="nav-icon">💼</span>
-            <span class="nav-text">Comission</span>
+            <span class="nav-text">Client</span>
         </button>
         <button onclick="switchTab('settings')" id="btn-settings" class="nav-item">
             <span class="nav-icon">⚙️</span>
@@ -165,6 +171,7 @@
             <span class="nav-text">Preview</span>
         </button>
     </nav>
+
     <script src="/js/admin-logic.js"></script>
 </body>
 </html>

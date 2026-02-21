@@ -245,3 +245,28 @@ header {
     .footer-banner-container img { width: 150%; height: auto; display: block; transform: translateY(0); margin-bottom: -5px; margin: 0 auto; }
 
 }
+
+/* ============================================
+   GSAP INITIAL STATES — tambahan saja
+   ============================================ */
+header { transform: translateY(-100%); }
+.biglogo-wrapper { opacity: 0; }
+.image-gallery img { opacity: 0; clip-path: inset(100% 0 0 0); }
+.info-header { opacity: 0; transform: translateY(32px); }
+.info-list   { opacity: 0; transform: translateY(16px); }
+#modal-img     { opacity: 0; }
+#modal-caption { opacity: 0; }
+#close-modal   { opacity: 0; }
+
+/* ============================================
+   GALLERY IMAGE FILTER — halus, bukan di modal
+   ============================================ */
+.image-gallery img {
+    filter: grayscale(60%) brightness(0.9) contrast(1.05);
+    transition: filter 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+.image-gallery img:hover {
+    filter: grayscale(0%) brightness(1) contrast(1);
+    transform: scale(1.02);
+}
