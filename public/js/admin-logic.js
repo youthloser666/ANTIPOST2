@@ -1,14 +1,8 @@
 // --- CONFIG & UTILS ---
 
 function switchTab(tabName) {
-    // Sembunyikan semua tab
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-    // Tampilkan tab yang dipilih
     document.getElementById('tab-' + tabName).classList.add('active');
-    
-    // Update status tombol sidebar
-    document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('btn-' + tabName).classList.add('active');
 }
 
 // Fungsi Upload Generic (bisa dipakai Personal & Comission)

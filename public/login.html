@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANTIPOST — Admin</title>
     <link rel="stylesheet" href="/css/login.css">
 </head>
@@ -8,19 +10,17 @@
     <div class="login-card">
         <h2>Admin Access</h2>
 
-        <div id="error-msg" class="error"></div>
+        <p id="error-msg" class="error"></p>
 
-        <!-- Step 1: Password -->
         <div id="step-1">
-            <input type="password" id="passwordInput" placeholder="Password" required autofocus>
+            <input type="password" id="passwordInput" placeholder="Password" autofocus />
             <button type="button" onclick="validatePassword()">Continue</button>
         </div>
 
-        <!-- Step 2: PIN -->
-        <form id="step-2" action="/login" method="POST" style="display:none;">
-            <div class="success-badge">Password verified ✓</div>
-            <input type="hidden" name="password" id="hiddenPassword">
-            <input type="password" name="pin" id="pinInput" placeholder="PIN" required pattern="[0-9]*" inputmode="numeric">
+        <form id="step-2" action="/login" method="POST">
+            <p class="success-badge">Password verified ✓</p>
+            <input type="hidden" name="password" id="hiddenPassword" />
+            <input type="password" name="pin" id="pinInput" placeholder="PIN" pattern="[0-9]*" inputmode="numeric" />
             <button type="submit">Authenticate</button>
         </form>
     </div>

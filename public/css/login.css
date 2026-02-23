@@ -14,7 +14,7 @@
     --muted:   #999;
     --error:   #c0392b;
     --success: #2e7d32;
-    --font: 'Inter', -apple-system, sans-serif;
+    --font:    'Inter', -apple-system, sans-serif;
 }
 
 body {
@@ -24,6 +24,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    padding: 24px;
 }
 
 .login-card {
@@ -31,7 +32,8 @@ body {
     border: 1px solid var(--border);
     border-radius: 2px;
     padding: 48px 40px;
-    width: 340px;
+    width: 100%;
+    max-width: 340px;
 }
 
 h2 {
@@ -55,9 +57,14 @@ input {
     font-weight: 300;
     padding: 12px 0;
     outline: none;
-    transition: border-color 0.2s;
     border-radius: 0;
-    margin-bottom: 0;
+    transition: border-color 0.2s;
+    /* Prevent iOS zoom on focus (font-size must be >= 16px on mobile) */
+    -webkit-text-size-adjust: 100%;
+}
+
+@media (max-width: 480px) {
+    input { font-size: 16px; }
 }
 
 input:focus { border-bottom-color: var(--black); }
@@ -79,10 +86,14 @@ button {
     text-transform: uppercase;
     margin-top: 28px;
     transition: opacity 0.2s;
+    /* Better tap target on mobile */
+    min-height: 48px;
 }
 
-button:hover { opacity: 0.7; }
+button:hover  { opacity: 0.7; }
+button:active { opacity: 0.5; }
 
+/* Error / success */
 .error {
     font-size: 12px;
     color: var(--error);
@@ -97,20 +108,25 @@ button:hover { opacity: 0.7; }
     color: var(--success);
     padding: 10px 0;
     margin-bottom: 20px;
-    display: inline-block;
-    width: 100%;
     border-top: 1px solid currentColor;
     letter-spacing: 1px;
 }
 
-#step-1, #step-2 { display: flex; flex-direction: column; }
-#step-2 { animation: stepIn 0.25s ease; }
+/* Steps */
+#step-1 { display: flex; flex-direction: column; }
+
+#step-2 {
+    display: none;
+    flex-direction: column;
+    animation: stepIn 0.25s ease;
+}
 
 @keyframes stepIn {
     from { opacity: 0; transform: translateY(6px); }
     to   { opacity: 1; transform: translateY(0); }
 }
 
+/* Responsive */
 @media (max-width: 400px) {
-    .login-card { width: 90vw; padding: 36px 24px; }
+    .login-card { padding: 36px 20px; }
 }

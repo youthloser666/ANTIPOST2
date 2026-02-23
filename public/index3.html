@@ -1,139 +1,142 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANTIPOST — Admin Panel</title>
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
+
     <div class="main-content">
 
-    <!-- DASHBOARD -->
-    <div id="tab-dashboard" class="tab-content active">
-        <div class="card">
-            <h2>Overview</h2>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="stat-label">Personal Works</div>
-                    <div class="stat-number" id="stat-personal-count">—</div>
+        <!-- DASHBOARD -->
+        <div id="tab-dashboard" class="tab-content active">
+            <div class="card">
+                <h2>Overview</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Personal Works</div>
+                        <div class="stat-number" id="stat-personal-count">—</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Commission Works</div>
+                        <div class="stat-number" id="stat-cw-count">—</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">Commission Works</div>
-                    <div class="stat-number" id="stat-cw-count">—</div>
+            </div>
+            <div class="card">
+                <h2>Recent Activity</h2>
+                <div class="recent-grid">
+                    <div>
+                        <h3>Personal</h3>
+                        <ul class="recent-list" id="recent-personal-list">
+                            <li style="font-size:12px;color:#ccc;padding:10px 0;">Loading...</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3>Commission</h3>
+                        <ul class="recent-list" id="recent-cw-list">
+                            <li style="font-size:12px;color:#ccc;padding:10px 0;">Loading...</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="card">
-            <h2>Recent Activity</h2>
-            <div style="display: flex; gap: 32px; flex-wrap: wrap;">
-                <div style="flex: 1; min-width: 260px;">
-                    <h3>Personal</h3>
-                    <ul class="recent-list" id="recent-personal-list">
-                        <li style="font-size:12px; color:#ccc; padding:10px 0;">Loading...</li>
-                    </ul>
-                </div>
-                <div style="flex: 1; min-width: 260px;">
-                    <h3>Commission</h3>
-                    <ul class="recent-list" id="recent-cw-list">
-                        <li style="font-size:12px; color:#ccc; padding:10px 0;">Loading...</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- PERSONAL WORKS -->
-    <div id="tab-personal" class="tab-content">
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 22px;">
-                <h2 style="border:none; padding:0; margin:0;">Personal Works</h2>
-                <button class="delete" onclick="handleBulkDelete('personal')">Delete Selected</button>
+        <!-- PERSONAL WORKS -->
+        <div id="tab-personal" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Personal Works</h2>
+                    <button class="delete" onclick="handleBulkDelete('personal')">Delete Selected</button>
+                </div>
+                <input type="hidden" id="personalId" />
+                <input type="hidden" id="personalImageUrl" />
+                <input type="hidden" id="personalPublicId" />
+                <div class="upload-form">
+                    <input type="text" id="personalNameInput" placeholder="Title" />
+                    <input type="file" id="personalFileInput" accept="image/*" />
+                    <button id="personalUploadBtn" onclick="handlePersonalSubmit()">Upload</button>
+                    <button id="personalCancelBtn" class="cancel" style="display:none;" onclick="cancelPersonal()">Cancel</button>
+                </div>
+                <div class="progress" id="personalProgress">
+                    <div class="progress-bar" id="personalProgressBar"></div>
+                </div>
+                <p id="personalStatus"></p>
+                <img id="personalPreview" class="preview-img" src="" alt="Preview">
             </div>
-            <input type="hidden" id="personalId" />
-            <input type="hidden" id="personalImageUrl" />
-            <input type="hidden" id="personalPublicId" />
-            <div class="upload-form">
-                <input type="text" id="personalNameInput" placeholder="Title" />
-                <input type="file" id="personalFileInput" accept="image/*" />
-                <button id="personalUploadBtn" onclick="handlePersonalSubmit()">Upload</button>
-                <button id="personalCancelBtn" class="cancel" style="display:none;" onclick="cancelPersonal()">Cancel</button>
+            <div class="card">
+                <h2>Gallery</h2>
+                <div id="personalGallery" class="gallery-grid">
+                    <p style="font-size:12px;color:#ccc;padding:20px;">Loading...</p>
+                </div>
             </div>
-            <div class="progress" id="personalProgress">
-                <div class="progress-bar" id="personalProgressBar"></div>
-            </div>
-            <p id="personalStatus"></p>
-            <img id="personalPreview" class="preview-img" src="" alt="Preview">
         </div>
-        <div class="card">
-            <h2>Gallery</h2>
-            <div id="personalGallery" class="gallery-grid">
-                <p style="font-size:12px;color:#ccc;padding:20px;">Loading...</p>
-            </div>
-        </div>
-    </div>
 
-    <!-- COMMISSION WORKS -->
-    <div id="tab-cw" class="tab-content">
-        <div class="card">
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 14px; margin-bottom: 22px;">
-                <h2 style="border:none; padding:0; margin:0;">Commission Works</h2>
-                <button class="delete" onclick="handleBulkDelete('commission')">Delete Selected</button>
+        <!-- COMMISSION WORKS -->
+        <div id="tab-cw" class="tab-content">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Commission Works</h2>
+                    <button class="delete" onclick="handleBulkDelete('commission')">Delete Selected</button>
+                </div>
+                <input type="hidden" id="cwId" />
+                <input type="hidden" id="cwImageUrl" />
+                <input type="hidden" id="cwPublicId" />
+                <div class="upload-form">
+                    <input type="text" id="cwTitleInput" placeholder="Title" />
+                    <input type="file" id="cwFileInput" accept="image/*" />
+                    <button id="cwUploadBtn" onclick="handleComissionSubmit()">Upload</button>
+                    <button id="cwCancelBtn" class="cancel" style="display:none;" onclick="cancelComission()">Cancel</button>
+                </div>
+                <div class="progress" id="cwProgress">
+                    <div class="progress-bar" id="cwProgressBar"></div>
+                </div>
+                <p id="cwStatus"></p>
+                <img id="cwPreview" class="preview-img" src="" alt="Preview">
             </div>
-            <input type="hidden" id="cwId" />
-            <input type="hidden" id="cwImageUrl" />
-            <input type="hidden" id="cwPublicId" />
-            <div class="upload-form">
-                <input type="text" id="cwTitleInput" placeholder="Title" />
-                <input type="file" id="cwFileInput" accept="image/*" />
-                <button id="cwUploadBtn" onclick="handleComissionSubmit()">Upload</button>
-                <button id="cwCancelBtn" class="cancel" style="display:none;" onclick="cancelComission()">Cancel</button>
+            <div class="card">
+                <h2>Gallery</h2>
+                <div id="cwGallery" class="gallery-grid">
+                    <p style="font-size:12px;color:#ccc;padding:20px;">Loading...</p>
+                </div>
             </div>
-            <div class="progress" id="cwProgress">
-                <div class="progress-bar" id="cwProgressBar"></div>
-            </div>
-            <p id="cwStatus"></p>
-            <img id="cwPreview" class="preview-img" src="" alt="Preview">
         </div>
-        <div class="card">
-            <h2>Gallery</h2>
-            <div id="cwGallery" class="gallery-grid">
-                <p style="font-size:12px;color:#ccc;padding:20px;">Loading...</p>
-            </div>
-        </div>
-    </div>
 
-    <!-- SETTINGS -->
-    <div id="tab-settings" class="tab-content">
-        <div class="card">
-            <h2>Change Password</h2>
-            <div style="max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
-                <input type="password" id="oldPassInput" placeholder="Current password" />
-                <input type="password" id="newPassInput" placeholder="New password" />
-                <button onclick="handleChangePassword()">Update</button>
+        <!-- SETTINGS -->
+        <div id="tab-settings" class="tab-content">
+            <div class="card">
+                <h2>Change Password</h2>
+                <div class="settings-form">
+                    <input type="password" id="oldPassInput" placeholder="Current password" />
+                    <input type="password" id="newPassInput" placeholder="New password" />
+                    <button onclick="handleChangePassword()">Update</button>
+                </div>
+                <p id="settingsStatus"></p>
             </div>
-            <p id="settingsStatus"></p>
-        </div>
-        <div class="card">
-            <h2>Change PIN</h2>
-            <div style="max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
-                <input type="password" id="oldPinInput" placeholder="Current PIN" pattern="[0-9]*" inputmode="numeric" />
-                <input type="password" id="newPinInput" placeholder="New PIN" pattern="[0-9]*" inputmode="numeric" />
-                <button onclick="handleChangePin()">Update</button>
+            <div class="card">
+                <h2>Change PIN</h2>
+                <div class="settings-form">
+                    <input type="password" id="oldPinInput" placeholder="Current PIN" pattern="[0-9]*" inputmode="numeric" />
+                    <input type="password" id="newPinInput" placeholder="New PIN" pattern="[0-9]*" inputmode="numeric" />
+                    <button onclick="handleChangePin()">Update</button>
+                </div>
+                <p id="pinStatus"></p>
             </div>
-            <p id="pinStatus"></p>
-        </div>
-        <div class="card">
-            <h2>Watermark</h2>
-            <div style="max-width: 320px; display: flex; flex-direction: column; gap: 14px;">
-                <input type="text" id="wmTextInput" placeholder="e.g. ANTIPOST" />
-                <button onclick="handleUpdateWm()">Update</button>
+            <div class="card">
+                <h2>Watermark</h2>
+                <div class="settings-form">
+                    <input type="text" id="wmTextInput" placeholder="e.g. ANTIPOST" />
+                    <button onclick="handleUpdateWm()">Update</button>
+                </div>
+                <p id="wmStatus"></p>
             </div>
-            <p id="wmStatus"></p>
+            <div class="card">
+                <h2>Session</h2>
+                <button onclick="window.location.href='/logout'" class="delete">Logout</button>
+            </div>
         </div>
-        <div class="card">
-            <h2>Session</h2>
-            <button onclick="window.location.href='/logout'" class="delete" style="max-width:160px;">Logout</button>
-        </div>
-    </div>
 
     </div><!-- /.main-content -->
 
@@ -148,30 +151,56 @@
         </div>
     </div>
 
-    <!-- FLOATING NAV -->
-    <nav class="floating-nav">
-        <button onclick="switchTab('dashboard')" id="btn-dashboard" class="nav-item active">
-            <span class="nav-icon">📊</span>
-            <span class="nav-text">Board</span>
-        </button>
-        <button onclick="switchTab('personal')" id="btn-personal" class="nav-item">
-            <span class="nav-icon">📂</span>
-            <span class="nav-text">Personal</span>
-        </button>
-        <button onclick="switchTab('cw')" id="btn-cw" class="nav-item">
-            <span class="nav-icon">💼</span>
-            <span class="nav-text">Client</span>
-        </button>
-        <button onclick="switchTab('settings')" id="btn-settings" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            <span class="nav-text">Settings</span>
-        </button>
-        <button onclick="openLivePreview()" id="btn-live-preview" class="nav-item">
-            <span class="nav-icon">👁️</span>
-            <span class="nav-text">Preview</span>
-        </button>
-    </nav>
+    <!-- LIQUID MENU -->
+    <div class="goo-container">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+        <div class="blob blob-4"></div>
+    </div>
+
+    <div class="lmenu-content">
+        <nav class="lmenu-nav">
+            <button class="lmenu-item is-active" id="lbtn-dashboard" data-tab="dashboard">
+                <span class="lmenu-num">01</span>
+                <span class="lmenu-label">Dashboard</span>
+                <span class="lmenu-icon">📊</span>
+            </button>
+            <button class="lmenu-item" id="lbtn-personal" data-tab="personal">
+                <span class="lmenu-num">02</span>
+                <span class="lmenu-label">Personal</span>
+                <span class="lmenu-icon">📂</span>
+            </button>
+            <button class="lmenu-item" id="lbtn-cw" data-tab="cw">
+                <span class="lmenu-num">03</span>
+                <span class="lmenu-label">Commission</span>
+                <span class="lmenu-icon">💼</span>
+            </button>
+            <button class="lmenu-item" id="lbtn-settings" data-tab="settings">
+                <span class="lmenu-num">04</span>
+                <span class="lmenu-label">Settings</span>
+                <span class="lmenu-icon">⚙️</span>
+            </button>
+            <button class="lmenu-item" id="lbtn-preview" data-action="preview">
+                <span class="lmenu-num">05</span>
+                <span class="lmenu-label">Preview</span>
+                <span class="lmenu-icon">👁️</span>
+            </button>
+        </nav>
+        <div class="lmenu-footer">
+            <span>ANTIPOST</span>
+            <span>Admin Panel</span>
+        </div>
+    </div>
+
+    <div class="lmenu-overlay" id="lmenuOverlay"></div>
+
+    <button class="lmenu-trigger" id="lmenuTrigger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+    </button>
+    <div class="lmenu-trigger-label" id="lmenuLabel">Dashboard</div>
 
     <script src="/js/admin-logic.js"></script>
+    <script src="/js/liquid-menu.js"></script>
 </body>
 </html>
