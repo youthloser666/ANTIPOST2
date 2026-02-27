@@ -1,5 +1,17 @@
 // --- CONFIG & UTILS ---
 
+// Helper: fetch yang otomatis handle session expired (redirect ke /login)
+async function authFetch(url, options = {}) {
+    const res = await fetch(url, options);
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+        // Server mengembalikan HTML (biasanya redirect ke login)
+        window.location.href = '/login?error=timeout';
+        throw new Error('Session expired');
+    }
+    return res;
+}
+
 function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
     document.getElementById('tab-' + tabName).classList.add('active');
@@ -62,7 +74,7 @@ function getImgSrc(path, folder) {
 // --- DASHBOARD LOGIC ---
 async function loadStats() {
     try {
-        const res = await fetch('/api/admin/stats');
+        const res = await authFetch('/api/admin/stats');
         const data = await res.json();
 
         document.getElementById('stat-personal-count').textContent = data.counts.personals;
@@ -429,7 +441,7 @@ function showToast(message, duration = 3000) {
 async function initMaintenanceToggle() {
     try {
         // 1. Cek session username
-        const sessionRes = await fetch('/api/admin/session');
+        const sessionRes = await authFetch('/api/admin/session');
         const sessionData = await sessionRes.json();
 
         if (sessionData.username !== 'aldo_dev') return;
@@ -439,7 +451,7 @@ async function initMaintenanceToggle() {
         if (section) section.style.display = '';
 
         // 3. Load status maintenance dari DB
-        const maintRes = await fetch('/api/admin/maintenance');
+        const maintRes = await authFetch('/api/admin/maintenance');
         const maintData = await maintRes.json();
 
         const toggle = document.getElementById('maintenance-toggle');
@@ -454,7 +466,7 @@ async function initMaintenanceToggle() {
             toggle.disabled = true;
 
             try {
-                const res = await fetch('/api/config', {
+                const res = await authFetch('/api/config', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ is_maintenance: newValue })
@@ -515,7 +527,7 @@ async function handleChangePassword() {
     status.innerHTML = '<span>🔄 Memproses...</span>';
 
     try {
-        const res = await fetch('/api/change-password', {
+        const res = await authFetch('/api/change-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
@@ -547,7 +559,7 @@ async function handleChangePin() {
     status.innerHTML = '<span>🔄 Memproses...</span>';
 
     try {
-        const res = await fetch('/api/change-pin', {
+        const res = await authFetch('/api/change-pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ oldPin: oldPin, newPin: newPin })
