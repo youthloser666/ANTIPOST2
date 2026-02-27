@@ -17,7 +17,8 @@ const app = express();
 // Fix BigInt serialization
 BigInt.prototype.toJSON = function () { return this.toString(); };
 
-// Trust proxy (Vercel / reverse proxy)
+// Trust proxy — HARUS di paling atas sebelum session middleware
+// Vercel menggunakan reverse proxy, tanpa ini cookie secure tidak dikirim
 app.set('trust proxy', 1);
 
 // Middleware dasar
@@ -25,12 +26,40 @@ app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // ====== SESSION (database-backed) ======
+
+// Pilih URL koneksi untuk session store:
+// - Gunakan SESSION_DATABASE_URL jika ada (khusus session store)
+// - Fallback ke DIRECT_URL
+// - Fallback terakhir ke DATABASE_URL (tanpa ?pgbouncer=true)
+function getSessionConnectionUrl() {
+    if (process.env.SESSION_DATABASE_URL) return process.env.SESSION_DATABASE_URL;
+    if (process.env.DIRECT_URL) return process.env.DIRECT_URL;
+    // Strip ?pgbouncer=true karena connect-pg-simple butuh koneksi langsung
+    const dbUrl = process.env.DATABASE_URL || '';
+    return dbUrl.replace('?pgbouncer=true', '');
+}
+
+const sessionConnUrl = getSessionConnectionUrl();
+console.log('[Session] Connecting to:', sessionConnUrl.replace(/:[^:@]+@/, ':***@')); // Log URL tanpa password
+
+const sessionStore = new pgSession({
+    conString: sessionConnUrl,
+    tableName: 'session',
+    createTableIfMissing: true,
+    // Timeout koneksi agar tidak hang
+    pool: {
+        connectionTimeoutMillis: 10000,
+        max: 5
+    }
+});
+
+// Error handler — agar error DB muncul di Vercel Logs
+sessionStore.on('error', (error) => {
+    console.error('SESSION_STORE_ERROR:', error);
+});
+
 app.use(session({
-    store: new pgSession({
-        conString: process.env.DIRECT_URL,
-        tableName: 'session',
-        createTableIfMissing: true
-    }),
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || 'fallback-dev-secret-change-me',
     resave: false,
     saveUninitialized: false,
