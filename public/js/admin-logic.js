@@ -74,7 +74,8 @@ function getImgSrc(path, folder) {
 // --- DASHBOARD LOGIC ---
 async function loadStats() {
     try {
-        const res = await authFetch('/api/admin/stats');
+        const res = await fetch('/api/admin/stats');
+        if (!res.ok) return;
         const data = await res.json();
 
         document.getElementById('stat-personal-count').textContent = data.counts.personals;
@@ -441,7 +442,8 @@ function showToast(message, duration = 3000) {
 async function initMaintenanceToggle() {
     try {
         // 1. Cek session username
-        const sessionRes = await authFetch('/api/admin/session');
+        const sessionRes = await fetch('/api/admin/session');
+        if (!sessionRes.ok) return;
         const sessionData = await sessionRes.json();
 
         if (sessionData.username !== 'aldo_dev') return;
@@ -451,7 +453,8 @@ async function initMaintenanceToggle() {
         if (section) section.style.display = '';
 
         // 3. Load status maintenance dari DB
-        const maintRes = await authFetch('/api/admin/maintenance');
+        const maintRes = await fetch('/api/admin/maintenance');
+        if (!maintRes.ok) return;
         const maintData = await maintRes.json();
 
         const toggle = document.getElementById('maintenance-toggle');
