@@ -3,6 +3,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const pgSession = require('connect-pg-simple')(session);
+const { Pool } = require('pg');
 const { requireAuth } = require('./middleware/authMiddleware');
 const maintenanceCheck = require('./middleware/maintenanceMiddleware');
 
@@ -27,33 +28,35 @@ app.use(express.urlencoded({ extended: true, limit: '100mb' }));
 
 // ====== SESSION (database-backed) ======
 
-// Pilih URL koneksi untuk session store:
-// - Gunakan SESSION_DATABASE_URL jika ada (khusus session store)
-// - Fallback ke DIRECT_URL
-// - Fallback terakhir ke DATABASE_URL (tanpa ?pgbouncer=true)
+// Pilih URL koneksi untuk session store
 function getSessionConnectionUrl() {
     if (process.env.SESSION_DATABASE_URL) return process.env.SESSION_DATABASE_URL;
     if (process.env.DIRECT_URL) return process.env.DIRECT_URL;
-    // Strip ?pgbouncer=true karena connect-pg-simple butuh koneksi langsung
     const dbUrl = process.env.DATABASE_URL || '';
     return dbUrl.replace('?pgbouncer=true', '');
 }
 
 const sessionConnUrl = getSessionConnectionUrl();
-console.log('[Session] Connecting to:', sessionConnUrl.replace(/:[^:@]+@/, ':***@')); // Log URL tanpa password
+console.log('[Session] Connecting to:', sessionConnUrl.replace(/:[^:@]+@/, ':***@'));
 
-const sessionStore = new pgSession({
-    conString: sessionConnUrl,
-    tableName: 'session',
-    createTableIfMissing: true,
-    // Timeout koneksi agar tidak hang
-    pool: {
-        connectionTimeoutMillis: 10000,
-        max: 5
-    }
+// Buat pg Pool eksplisit — connect-pg-simple butuh ini
+const pgPool = new Pool({
+    connectionString: sessionConnUrl,
+    connectionTimeoutMillis: 10000,
+    max: 5,
+    ssl: { rejectUnauthorized: false }
 });
 
-// Error handler — agar error DB muncul di Vercel Logs
+pgPool.on('error', (err) => {
+    console.error('[PG Pool] Unexpected error:', err);
+});
+
+const sessionStore = new pgSession({
+    pool: pgPool,
+    tableName: 'session',
+    createTableIfMissing: true
+});
+
 sessionStore.on('error', (error) => {
     console.error('SESSION_STORE_ERROR:', error);
 });
