@@ -469,11 +469,17 @@ async function initMaintenanceToggle() {
             toggle.disabled = true;
 
             try {
-                const res = await authFetch('/api/config', {
+                const res = await fetch('/api/config', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ is_maintenance: newValue })
                 });
+
+                if (!(res.headers.get('content-type') || '').includes('application/json')) {
+                    showToast('❌ Session expired. Silakan login ulang.');
+                    toggle.checked = !newValue;
+                    return;
+                }
                 const data = await res.json();
 
                 if (res.status === 403) {
@@ -530,11 +536,16 @@ async function handleChangePassword() {
     status.innerHTML = '<span>🔄 Memproses...</span>';
 
     try {
-        const res = await authFetch('/api/change-password', {
+        const res = await fetch('/api/change-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
         });
+
+        if (!res.ok && res.status === 401 || !(res.headers.get('content-type') || '').includes('application/json')) {
+            status.innerHTML = '<span class="error-message">❌ Session expired. Silakan login ulang.</span>';
+            return;
+        }
         const data = await res.json();
 
         if (data.success) {
@@ -562,11 +573,16 @@ async function handleChangePin() {
     status.innerHTML = '<span>🔄 Memproses...</span>';
 
     try {
-        const res = await authFetch('/api/change-pin', {
+        const res = await fetch('/api/change-pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ oldPin: oldPin, newPin: newPin })
         });
+
+        if (!res.ok && res.status === 401 || !(res.headers.get('content-type') || '').includes('application/json')) {
+            status.innerHTML = '<span class="error-message">❌ Session expired. Silakan login ulang.</span>';
+            return;
+        }
         const data = await res.json();
 
         if (data.success) {
