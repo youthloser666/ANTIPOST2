@@ -1,5 +1,4 @@
 const prisma = require('../config/prisma');
-const { parseCookies, sessions } = require('./authMiddleware');
 
 // Extensions file statis yang TIDAK perlu dicek maintenance
 const STATIC_EXTENSIONS = /\.(css|js|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot|map|webp|avif|mp4|webm)$/i;
@@ -26,12 +25,9 @@ const maintenanceCheck = async (req, res, next) => {
         console.log(`[Maintenance] Path: ${req.path} | is_maintenance: ${isMaintenance}`);
 
         if (isMaintenance) {
-            // 3. CEK LOGIN: admin yang sudah login → bypass, bisa akses semua halaman
-            const cookies = parseCookies(req);
-            const sessionId = cookies.session_id;
-
-            if (sessionId && sessions.has(sessionId)) {
-                console.log(`[Maintenance] Admin session detected → bypass`);
+            // 3. CEK LOGIN: admin yang sudah login → bypass via express-session
+            if (req.session && req.session.username) {
+                console.log(`[Maintenance] Admin session (${req.session.username}) → bypass`);
                 return next();
             }
 

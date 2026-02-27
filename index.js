@@ -1,6 +1,8 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const { requireAuth } = require('./middleware/authMiddleware');
 const maintenanceCheck = require('./middleware/maintenanceMiddleware');
 
@@ -15,9 +17,30 @@ const app = express();
 // Fix BigInt serialization
 BigInt.prototype.toJSON = function () { return this.toString(); };
 
+// Trust proxy (Vercel / reverse proxy)
+app.set('trust proxy', 1);
+
 // Middleware dasar
 app.use(express.json({ limit: '100mb' }));
 app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+
+// ====== SESSION (database-backed) ======
+app.use(session({
+    store: new pgSession({
+        conString: process.env.DIRECT_URL,
+        tableName: 'session',
+        createTableIfMissing: true
+    }),
+    secret: process.env.SESSION_SECRET || 'fallback-dev-secret-change-me',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 24 * 60 * 60 * 1000 // 24 jam
+    }
+}));
 
 // Auth & Admin routes (harus bisa diakses meski maintenance ON)
 app.use(authRoutes);
@@ -31,8 +54,6 @@ app.get('/maintenance', (req, res) => res.sendFile(path.join(__dirname, 'public'
 app.get('/admin', requireAuth, (req, res) => res.sendFile(path.join(__dirname, 'public', 'index3.html')));
 
 // ====== MAINTENANCE MIDDLEWARE ======
-// Posisi: DI ATAS express.static agar bisa intercept request ke "/"
-// Logic di dalam middleware sudah handle skip file statis (.css, .js, .png, dll)
 app.use(maintenanceCheck);
 
 // Intercept akses langsung ke file index3.html

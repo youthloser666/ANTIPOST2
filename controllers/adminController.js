@@ -105,5 +105,5 @@ exports.updateMaintenanceStatus = async (req, res) => {
 
 // GET /api/admin/session — return current username for frontend logic
 exports.getSession = (req, res) => {
-    res.json({ username: req.username || null });
+    res.json({ username: req.session?.username || req.username || null });
 };
