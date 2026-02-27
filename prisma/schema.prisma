@@ -3,15 +3,33 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
   directUrl = env("DIRECT_URL")
+}
+
+model admin_config {
+  id              BigInt   @id @default(autoincrement())
+  password_hash   String
+  pin_hash        String
+  wm_text         String?  @default("ANTIPOST")
+  is_maintenance  Boolean  @default(false)
+}
+
+model admin_users {
+  id              BigInt    @id @default(autoincrement())
+  username        String    @unique @db.VarChar(100)
+  password_hash   String    @db.VarChar(255)
+  pin_hash        String    @db.VarChar(255)
+  display_name    String?   @db.VarChar(255)
+  created_at      DateTime  @default(now()) @db.Timestamp(0)
+  updated_at      DateTime  @updatedAt @db.Timestamp(0)
 }
 
 model comission_works {
   id          BigInt    @id @default(autoincrement())
   title       String    @db.VarChar(255)
-  description String?   @db.Text
+  description String?
   image_path  String?   @db.VarChar(255)
   public_id   String?   @db.VarChar(255)
   created_at  DateTime? @db.Timestamp(0)
@@ -21,10 +39,10 @@ model comission_works {
 model failed_jobs {
   id         BigInt   @id @default(autoincrement())
   uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
-  connection String   @db.Text
-  queue      String   @db.Text
-  payload    String   @db.Text
-  exception  String   @db.Text
+  connection String
+  queue      String
+  payload    String
+  exception  String
   failed_at  DateTime @default(now()) @db.Timestamp(0)
 }
 
@@ -43,10 +61,10 @@ model password_resets {
 model personal_access_tokens {
   id             BigInt    @id @default(autoincrement())
   tokenable_type String    @db.VarChar(255)
-  tokenable_id   BigInt    
+  tokenable_id   BigInt
   name           String    @db.VarChar(255)
   token          String    @unique(map: "personal_access_tokens_token_unique") @db.VarChar(64)
-  abilities      String?   @db.Text
+  abilities      String?
   last_used_at   DateTime? @db.Timestamp(0)
   expires_at     DateTime? @db.Timestamp(0)
   created_at     DateTime? @db.Timestamp(0)
@@ -58,7 +76,7 @@ model personal_access_tokens {
 model personals {
   id          BigInt    @id @default(autoincrement())
   name        String    @db.VarChar(255)
-  description String?   @db.Text
+  description String?
   image_path  String?   @db.VarChar(255)
   public_id   String?   @db.VarChar(255)
   created_at  DateTime? @db.Timestamp(0)

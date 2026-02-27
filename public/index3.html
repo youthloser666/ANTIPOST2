@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANTIPOST — Admin Panel</title>
     <link rel="stylesheet" href="/css/dashboard.css">
 </head>
+
 <body>
 
     <div class="main-content">
@@ -58,7 +60,8 @@
                     <input type="text" id="personalNameInput" placeholder="Title" />
                     <input type="file" id="personalFileInput" accept="image/*" />
                     <button id="personalUploadBtn" onclick="handlePersonalSubmit()">Upload</button>
-                    <button id="personalCancelBtn" class="cancel" style="display:none;" onclick="cancelPersonal()">Cancel</button>
+                    <button id="personalCancelBtn" class="cancel" style="display:none;"
+                        onclick="cancelPersonal()">Cancel</button>
                 </div>
                 <div class="progress" id="personalProgress">
                     <div class="progress-bar" id="personalProgressBar"></div>
@@ -88,7 +91,8 @@
                     <input type="text" id="cwTitleInput" placeholder="Title" />
                     <input type="file" id="cwFileInput" accept="image/*" />
                     <button id="cwUploadBtn" onclick="handleComissionSubmit()">Upload</button>
-                    <button id="cwCancelBtn" class="cancel" style="display:none;" onclick="cancelComission()">Cancel</button>
+                    <button id="cwCancelBtn" class="cancel" style="display:none;"
+                        onclick="cancelComission()">Cancel</button>
                 </div>
                 <div class="progress" id="cwProgress">
                     <div class="progress-bar" id="cwProgressBar"></div>
@@ -118,8 +122,10 @@
             <div class="card">
                 <h2>Change PIN</h2>
                 <div class="settings-form">
-                    <input type="password" id="oldPinInput" placeholder="Current PIN" pattern="[0-9]*" inputmode="numeric" />
-                    <input type="password" id="newPinInput" placeholder="New PIN" pattern="[0-9]*" inputmode="numeric" />
+                    <input type="password" id="oldPinInput" placeholder="Current PIN" pattern="[0-9]*"
+                        inputmode="numeric" />
+                    <input type="password" id="newPinInput" placeholder="New PIN" pattern="[0-9]*"
+                        inputmode="numeric" />
                     <button onclick="handleChangePin()">Update</button>
                 </div>
                 <p id="pinStatus"></p>
@@ -135,6 +141,21 @@
             <div class="card">
                 <h2>Session</h2>
                 <button onclick="window.location.href='/logout'" class="delete">Logout</button>
+            </div>
+
+            <!-- SISTEM (hanya muncul untuk aldo_dev) -->
+            <div class="card" id="sistem-section" style="display:none;">
+                <h2>Sistem</h2>
+                <div class="maintenance-toggle-row">
+                    <div class="maintenance-info">
+                        <span class="maintenance-label">Maintenance Mode</span>
+                        <span class="maintenance-status" id="maintenance-status-text">Checking...</span>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="maintenance-toggle">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
             </div>
         </div>
 
@@ -203,4 +224,5 @@
     <script src="/js/admin-logic.js"></script>
     <script src="/js/liquid-menu.js"></script>
 </body>
+
 </html>

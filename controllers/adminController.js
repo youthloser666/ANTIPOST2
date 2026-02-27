@@ -43,7 +43,7 @@ exports.updateWmConfig = async (req, res) => {
 
 exports.bulkDelete = async (req, res) => {
     const { ids, category } = req.body;
-    
+
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
         return res.status(400).json({ error: 'Tidak ada ID yang dipilih' });
     }
@@ -73,7 +73,37 @@ exports.bulkDelete = async (req, res) => {
 exports.getConfig = (req, res) => {
     res.json({
         cloudName: process.env.CLOUD_NAME,
-        uploadPreset: process.env.UPLOAD_PRESET || 'ml_default',
-        apiKey: process.env.API_KEY
+        uploadPreset: process.env.UPLOAD_PRESET || 'ml_default'
     });
+};
+
+// GET /api/admin/maintenance — ambil status maintenance dari DB
+exports.getMaintenanceStatus = async (req, res) => {
+    try {
+        const config = await prisma.$queryRaw`SELECT is_maintenance FROM admin_config LIMIT 1`;
+        const isMaintenance = config.length > 0 && config[0].is_maintenance === true;
+        res.json({ is_maintenance: isMaintenance });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+// PUT /api/config — update status maintenance (hanya aldo_dev)
+exports.updateMaintenanceStatus = async (req, res) => {
+    if (req.username !== 'aldo_dev') {
+        return res.status(403).json({ message: 'Akses Ditolak' });
+    }
+
+    const { is_maintenance } = req.body;
+    try {
+        await prisma.$executeRaw`UPDATE admin_config SET is_maintenance = ${is_maintenance} WHERE id = (SELECT id FROM admin_config LIMIT 1)`;
+        res.json({ success: true, is_maintenance });
+    } catch (error) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+// GET /api/admin/session — return current username for frontend logic
+exports.getSession = (req, res) => {
+    res.json({ username: req.username || null });
 };

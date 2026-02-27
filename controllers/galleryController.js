@@ -1,38 +1,5 @@
 const prisma = require('../config/prisma');
 const cloudinary = require('../config/cloudinary');
-const sharp = require('sharp');
-const { Readable } = require('stream');
-
-// --- Upload Logic ---
-exports.uploadImage = async (req, res) => {
-    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    
-    try {
-        const processedBuffer = await sharp(req.file.buffer)
-            .resize({ width: 2000, withoutEnlargement: true })
-            .toFormat('webp', { quality: 80 })
-            .toBuffer();
-
-        const result = await new Promise((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                { folder: 'portofolio_kita' },
-                (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result);
-                }
-            );
-            const stream = new Readable();
-            stream.push(processedBuffer);
-            stream.push(null);
-            stream.pipe(uploadStream);
-        });
-
-        res.json({ imageUrl: result.secure_url, public_id: result.public_id });
-    } catch (error) {
-        console.error("[Upload] Processing Error:", error);
-        res.status(500).json({ error: `Processing Error: ${error.message}` });
-    }
-};
 
 // --- Personals ---
 exports.getPersonals = async (req, res) => {

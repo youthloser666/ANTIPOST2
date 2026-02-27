@@ -15,16 +15,17 @@ const requireAuth = (req, res, next) => {
     const sessionId = cookies.session_id;
 
     if (sessionId && sessions.has(sessionId)) {
-        const lastActivity = sessions.get(sessionId);
+        const session = sessions.get(sessionId);
         const now = Date.now();
 
-        if (now - lastActivity > SESSION_TIMEOUT) {
+        if (now - session.lastActivity > SESSION_TIMEOUT) {
             sessions.delete(sessionId);
             res.setHeader('Set-Cookie', 'session_id=; HttpOnly; Path=/; Max-Age=0');
             return res.redirect('/login?error=timeout');
         }
 
-        sessions.set(sessionId, now);
+        session.lastActivity = now;
+        req.username = session.username;
         return next();
     }
     res.redirect('/login');

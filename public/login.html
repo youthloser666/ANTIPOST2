@@ -13,12 +13,14 @@
         <p id="error-msg" class="error"></p>
 
         <div id="step-1">
-            <input type="password" id="passwordInput" placeholder="Password" autofocus />
+            <input type="text" id="usernameInput" placeholder="Username" autofocus />
+            <input type="password" id="passwordInput" placeholder="Password" />
             <button type="button" onclick="validatePassword()">Continue</button>
         </div>
 
         <form id="step-2" action="/login" method="POST">
             <p class="success-badge">Password verified ✓</p>
+            <input type="hidden" name="username" id="hiddenUsername" />
             <input type="hidden" name="password" id="hiddenPassword" />
             <input type="password" name="pin" id="pinInput" placeholder="PIN" pattern="[0-9]*" inputmode="numeric" />
             <button type="submit">Authenticate</button>

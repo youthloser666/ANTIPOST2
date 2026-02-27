@@ -12,7 +12,7 @@ function uploadFile(file, progressBarElement, progressContainer) {
         formData.append('image', file);
 
         const xhr = new XMLHttpRequest();
-        
+
         if (progressContainer) progressContainer.style.display = 'block';
         if (progressBarElement) progressBarElement.style.width = '0%';
 
@@ -47,10 +47,10 @@ function uploadFile(file, progressBarElement, progressContainer) {
     });
 }
 
-function escapeHtml(s) { 
+function escapeHtml(s) {
     return String(s || '').replace(/[&<>\"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-    })[c]); 
+    })[c]);
 }
 
 function getImgSrc(path, folder) {
@@ -64,7 +64,7 @@ async function loadStats() {
     try {
         const res = await fetch('/api/admin/stats');
         const data = await res.json();
-        
+
         document.getElementById('stat-personal-count').textContent = data.counts.personals;
         document.getElementById('stat-cw-count').textContent = data.counts.comission_works;
 
@@ -134,7 +134,7 @@ async function savePersonalToDB(id, name, imageUrl, publicId) {
     try {
         const url = id ? `/api/personals/${id}` : '/api/personals';
         const method = id ? 'PUT' : 'POST';
-        
+
         const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
@@ -147,7 +147,7 @@ async function savePersonalToDB(id, name, imageUrl, publicId) {
         });
 
         if (!res.ok) throw new Error('Gagal menyimpan ke database');
-        
+
         status.innerHTML = '<span class="success-message">✅ Berhasil disimpan!</span>';
         cancelPersonal(); // Reset form
         loadPersonals();
@@ -162,7 +162,7 @@ async function loadPersonals() {
         const res = await fetch('/api/personals');
         const data = await res.json();
         const gallery = document.getElementById('personalGallery');
-        
+
         if (!data.length) { gallery.innerHTML = '<p>Belum ada data.</p>'; return; }
 
         gallery.innerHTML = data.map(item => `
@@ -185,12 +185,12 @@ async function editPersonal(id) {
     try {
         const res = await fetch(`/api/personals/${id}`);
         const data = await res.json();
-        
+
         document.getElementById('personalId').value = data.id;
         document.getElementById('personalNameInput').value = data.name;
         document.getElementById('personalImageUrl').value = data.image_path;
         document.getElementById('personalPublicId').value = data.public_id || '';
-        
+
         const preview = document.getElementById('personalPreview');
         preview.src = getImgSrc(data.image_path, 'personals');
         preview.style.display = 'block';
@@ -264,7 +264,7 @@ async function saveComissionToDB(id, title, imageUrl, publicId) {
     try {
         const url = id ? `/api/comission_works/${id}` : '/api/comission_works';
         const method = id ? 'PUT' : 'POST';
-        
+
         const res = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
@@ -277,7 +277,7 @@ async function saveComissionToDB(id, title, imageUrl, publicId) {
         });
 
         if (!res.ok) throw new Error('Gagal menyimpan ke database');
-        
+
         status.innerHTML = '<span class="success-message">✅ Berhasil disimpan!</span>';
         cancelComission();
         loadComissions();
@@ -292,7 +292,7 @@ async function loadComissions() {
         const res = await fetch('/api/comission_works');
         const data = await res.json();
         const gallery = document.getElementById('cwGallery');
-        
+
         if (!data.length) { gallery.innerHTML = '<p>Belum ada data.</p>'; return; }
 
         gallery.innerHTML = data.map(item => `
@@ -315,12 +315,12 @@ async function editComission(id) {
     try {
         const res = await fetch(`/api/comission_works/${id}`);
         const data = await res.json();
-        
+
         document.getElementById('cwId').value = data.id;
         document.getElementById('cwTitleInput').value = data.title;
         document.getElementById('cwImageUrl').value = data.image_path;
         document.getElementById('cwPublicId').value = data.public_id || '';
-        
+
         const preview = document.getElementById('cwPreview');
         preview.src = getImgSrc(data.image_path, 'comission_works');
         preview.style.display = 'block';
@@ -328,7 +328,7 @@ async function editComission(id) {
         document.getElementById('cwUploadBtn').textContent = 'Update';
         document.getElementById('cwCancelBtn').style.display = 'inline-block';
         document.getElementById('cwStatus').innerHTML = '<span>🔄 Mode Edit</span>';
-        
+
         // Scroll ke form comission
         document.querySelector('.main-content').scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) { alert('Gagal memuat data'); }
@@ -359,7 +359,7 @@ async function handleBulkDelete(category) {
     // Tentukan class checkbox berdasarkan kategori
     const className = category === 'personal' ? '.bulk-personal' : '.bulk-commission';
     const checkboxes = document.querySelectorAll(`${className}:checked`);
-    
+
     if (checkboxes.length === 0) {
         alert('Pilih minimal satu item untuk dihapus.');
         return;
@@ -392,15 +392,16 @@ async function handleBulkDelete(category) {
 // --- INIT ---
 window.addEventListener('load', () => {
     loadStats();
-    loadWmConfig(); // Load watermark setting saat halaman dibuka
+    loadWmConfig();
     loadPersonals();
     loadComissions();
+    initMaintenanceToggle(); // Init maintenance section
 
-    // Validasi Ukuran File (Max 10MB)
+    // Validasi Ukuran File (Max 50MB)
     ['personalFileInput', 'cwFileInput'].forEach(id => {
         const el = document.getElementById(id);
         if (el) {
-            el.addEventListener('change', function() {
+            el.addEventListener('change', function () {
                 if (this.files[0] && this.files[0].size > 50 * 1024 * 1024) {
                     alert('Ukuran file maksimal 50MB untuk akun gratis');
                     this.value = '';
@@ -410,12 +411,94 @@ window.addEventListener('load', () => {
     });
 });
 
+// --- TOAST NOTIFICATION ---
+function showToast(message, duration = 3000) {
+    let toast = document.getElementById('app-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'app-toast';
+        toast.className = 'toast-notification';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// --- MAINTENANCE TOGGLE LOGIC ---
+async function initMaintenanceToggle() {
+    try {
+        // 1. Cek session username
+        const sessionRes = await fetch('/api/admin/session');
+        const sessionData = await sessionRes.json();
+
+        if (sessionData.username !== 'aldo_dev') return;
+
+        // 2. Tampilkan section Sistem
+        const section = document.getElementById('sistem-section');
+        if (section) section.style.display = '';
+
+        // 3. Load status maintenance dari DB
+        const maintRes = await fetch('/api/admin/maintenance');
+        const maintData = await maintRes.json();
+
+        const toggle = document.getElementById('maintenance-toggle');
+        const statusText = document.getElementById('maintenance-status-text');
+
+        toggle.checked = maintData.is_maintenance;
+        updateMaintenanceStatusText(statusText, maintData.is_maintenance);
+
+        // 4. Handle toggle change
+        toggle.addEventListener('change', async () => {
+            const newValue = toggle.checked;
+            toggle.disabled = true;
+
+            try {
+                const res = await fetch('/api/config', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ is_maintenance: newValue })
+                });
+                const data = await res.json();
+
+                if (res.status === 403) {
+                    showToast('⛔ ' + data.message);
+                    toggle.checked = !newValue;
+                    return;
+                }
+
+                if (data.success) {
+                    updateMaintenanceStatusText(statusText, newValue);
+                    showToast(newValue
+                        ? '🔴 Maintenance Mode Berhasil Diaktifkan'
+                        : '🟢 Maintenance Mode Berhasil Dimatikan');
+                } else {
+                    toggle.checked = !newValue;
+                    showToast('❌ Gagal mengubah status: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                toggle.checked = !newValue;
+                showToast('❌ Gagal menghubungi server');
+            } finally {
+                toggle.disabled = false;
+            }
+        });
+    } catch (err) {
+        console.error('[Maintenance Toggle] Init error:', err);
+    }
+}
+
+function updateMaintenanceStatusText(el, isActive) {
+    el.textContent = isActive ? 'AKTIF — Website tidak bisa diakses publik' : 'NONAKTIF — Website normal';
+    el.className = 'maintenance-status ' + (isActive ? 'active' : 'inactive');
+}
+
 async function loadWmConfig() {
     try {
         const res = await fetch('/api/wm-config');
         const data = await res.json();
-        if(data.wm_text) document.getElementById('wmTextInput').value = data.wm_text;
-    } catch(e) { console.error(e); }
+        if (data.wm_text) document.getElementById('wmTextInput').value = data.wm_text;
+    } catch (e) { console.error(e); }
 }
 
 // --- SETTINGS LOGIC ---
@@ -486,7 +569,7 @@ async function handleChangePin() {
 async function handleUpdateWm() {
     const text = document.getElementById('wmTextInput').value;
     const status = document.getElementById('wmStatus');
-    
+
     status.innerHTML = '<span>🔄 Saving...</span>';
     try {
         const res = await fetch('/api/admin/update-wm', {

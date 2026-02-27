@@ -9,17 +9,18 @@ exports.loginPage = (req, res) => {
 };
 
 exports.login = async (req, res) => {
-    const { password, pin } = req.body;
+    const { username, password, pin } = req.body;
     try {
-        const admins = await prisma.$queryRaw`SELECT * FROM admin_config LIMIT 1`;
-        if (admins.length > 0) {
-            const admin = admins[0];
-            const isPasswordValid = await bcrypt.compare(password, admin.password_hash);
-            const isPinValid = await bcrypt.compare(pin, admin.pin_hash);
+        const user = await prisma.admin_users.findUnique({
+            where: { username }
+        });
+        if (user) {
+            const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+            const isPinValid = await bcrypt.compare(pin, user.pin_hash);
 
             if (isPasswordValid && isPinValid) {
                 const sessionId = crypto.randomBytes(16).toString('hex');
-                sessions.set(sessionId, Date.now());
+                sessions.set(sessionId, { lastActivity: Date.now(), username: user.username });
                 res.setHeader('Set-Cookie', `session_id=${sessionId}; HttpOnly; Path=/; Max-Age=86400`);
                 return res.redirect('/admin');
             }
@@ -38,11 +39,13 @@ exports.logout = (req, res) => {
 };
 
 exports.validatePassword = async (req, res) => {
-    const { password } = req.body;
+    const { username, password } = req.body;
     try {
-        const admins = await prisma.$queryRaw`SELECT * FROM admin_config LIMIT 1`;
-        if (admins.length > 0) {
-            const isPasswordValid = await bcrypt.compare(password, admins[0].password_hash);
+        const user = await prisma.admin_users.findUnique({
+            where: { username }
+        });
+        if (user) {
+            const isPasswordValid = await bcrypt.compare(password, user.password_hash);
             if (isPasswordValid) return res.json({ success: true });
         }
     } catch (error) {
@@ -53,17 +56,20 @@ exports.validatePassword = async (req, res) => {
 
 exports.changePassword = async (req, res) => {
     const { oldPassword, newPassword } = req.body;
+    const username = req.username;
     try {
-        const admins = await prisma.$queryRaw`SELECT * FROM admin_config LIMIT 1`;
-        if (admins.length === 0) return res.status(404).json({ success: false, message: 'Admin config not found' });
-        
-        const admin = admins[0];
-        const match = await bcrypt.compare(oldPassword, admin.password_hash);
+        const user = await prisma.admin_users.findUnique({ where: { username } });
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        const match = await bcrypt.compare(oldPassword, user.password_hash);
         if (!match) return res.json({ success: false, message: 'Password lama salah' });
 
         const newHash = await bcrypt.hash(newPassword, 10);
-        await prisma.$executeRaw`UPDATE admin_config SET password_hash = ${newHash} WHERE id = ${admin.id}`;
-        
+        await prisma.admin_users.update({
+            where: { username },
+            data: { password_hash: newHash }
+        });
+
         res.json({ success: true });
     } catch (error) {
         console.error("Change Password Error:", error);
@@ -73,17 +79,20 @@ exports.changePassword = async (req, res) => {
 
 exports.changePin = async (req, res) => {
     const { oldPin, newPin } = req.body;
+    const username = req.username;
     try {
-        const admins = await prisma.$queryRaw`SELECT * FROM admin_config LIMIT 1`;
-        if (admins.length === 0) return res.status(404).json({ success: false, message: 'Admin config not found' });
-        
-        const admin = admins[0];
-        const match = await bcrypt.compare(oldPin, admin.pin_hash);
+        const user = await prisma.admin_users.findUnique({ where: { username } });
+        if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+
+        const match = await bcrypt.compare(oldPin, user.pin_hash);
         if (!match) return res.json({ success: false, message: 'PIN lama salah' });
 
         const newHash = await bcrypt.hash(newPin, 10);
-        await prisma.$executeRaw`UPDATE admin_config SET pin_hash = ${newHash} WHERE id = ${admin.id}`;
-        
+        await prisma.admin_users.update({
+            where: { username },
+            data: { pin_hash: newHash }
+        });
+
         res.json({ success: true });
     } catch (error) {
         console.error("Change PIN Error:", error);

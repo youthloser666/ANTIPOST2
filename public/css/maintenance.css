@@ -1,0 +1,78 @@
+/* ============================================
+   ANTIPOST — MAINTENANCE PAGE
+   ============================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0a0a0f;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    overflow: hidden;
+}
+
+.container {
+    text-align: center;
+    padding: 2rem;
+    max-width: 520px;
+}
+
+.icon {
+    width: 280px;
+    height: auto;
+    margin: 0 auto 1.5rem;
+    display: block;
+    border-radius: 8px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 1rem;
+    letter-spacing: 0.05em;
+}
+
+p {
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #333, transparent);
+    margin: 1.5rem auto;
+}
+
+.brand {
+    font-size: 0.75rem;
+    color: #444;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
