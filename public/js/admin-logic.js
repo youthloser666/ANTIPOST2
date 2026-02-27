@@ -1,14 +1,31 @@
 // --- CONFIG & UTILS ---
 
-// Helper: fetch yang otomatis handle session expired (redirect ke /login)
+// Flag agar redirect hanya terjadi sekali
+let _isRedirecting = false;
+
+// Helper: fetch yang otomatis handle session expired
 async function authFetch(url, options = {}) {
     const res = await fetch(url, options);
+
+    // 1. Cek apakah response di-redirect oleh server (ke /login)
+    if (res.redirected) {
+        if (!_isRedirecting) {
+            _isRedirecting = true;
+            window.location.href = '/login?error=timeout';
+        }
+        throw new Error('Session expired — redirected');
+    }
+
+    // 2. Cek Content-Type — jika bukan JSON berarti dapat HTML
     const contentType = res.headers.get('content-type') || '';
     if (!contentType.includes('application/json')) {
-        // Server mengembalikan HTML (biasanya redirect ke login)
-        window.location.href = '/login?error=timeout';
-        throw new Error('Session expired');
+        if (!_isRedirecting) {
+            _isRedirecting = true;
+            window.location.href = '/login?error=timeout';
+        }
+        throw new Error('Session expired — non-JSON response');
     }
+
     return res;
 }
 
@@ -74,7 +91,7 @@ function getImgSrc(path, folder) {
 // --- DASHBOARD LOGIC ---
 async function loadStats() {
     try {
-        const res = await fetch('/api/admin/stats');
+        const res = await authFetch('/api/admin/stats');
         if (!res.ok) return;
         const data = await res.json();
 
@@ -148,7 +165,7 @@ async function savePersonalToDB(id, name, imageUrl, publicId) {
         const url = id ? `/api/personals/${id}` : '/api/personals';
         const method = id ? 'PUT' : 'POST';
 
-        const res = await fetch(url, {
+        const res = await authFetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -172,7 +189,7 @@ async function savePersonalToDB(id, name, imageUrl, publicId) {
 
 async function loadPersonals() {
     try {
-        const res = await fetch('/api/personals');
+        const res = await authFetch('/api/personals');
         const data = await res.json();
         const gallery = document.getElementById('personalGallery');
 
@@ -196,7 +213,7 @@ async function loadPersonals() {
 
 async function editPersonal(id) {
     try {
-        const res = await fetch(`/api/personals/${id}`);
+        const res = await authFetch(`/api/personals/${id}`);
         const data = await res.json();
 
         document.getElementById('personalId').value = data.id;
@@ -230,7 +247,7 @@ function cancelPersonal() {
 async function deletePersonal(id) {
     if (!confirm('Hapus item ini?')) return;
     try {
-        await fetch(`/api/personals/${id}`, { method: 'DELETE' });
+        await authFetch(`/api/personals/${id}`, { method: 'DELETE' });
         loadPersonals();
     } catch (err) { alert('Gagal menghapus'); }
 }
@@ -278,7 +295,7 @@ async function saveComissionToDB(id, title, imageUrl, publicId) {
         const url = id ? `/api/comission_works/${id}` : '/api/comission_works';
         const method = id ? 'PUT' : 'POST';
 
-        const res = await fetch(url, {
+        const res = await authFetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -302,7 +319,7 @@ async function saveComissionToDB(id, title, imageUrl, publicId) {
 
 async function loadComissions() {
     try {
-        const res = await fetch('/api/comission_works');
+        const res = await authFetch('/api/comission_works');
         const data = await res.json();
         const gallery = document.getElementById('cwGallery');
 
@@ -326,7 +343,7 @@ async function loadComissions() {
 
 async function editComission(id) {
     try {
-        const res = await fetch(`/api/comission_works/${id}`);
+        const res = await authFetch(`/api/comission_works/${id}`);
         const data = await res.json();
 
         document.getElementById('cwId').value = data.id;
@@ -362,7 +379,7 @@ function cancelComission() {
 async function deleteComission(id) {
     if (!confirm('Hapus item ini?')) return;
     try {
-        await fetch(`/api/comission_works/${id}`, { method: 'DELETE' });
+        await authFetch(`/api/comission_works/${id}`, { method: 'DELETE' });
         loadComissions();
     } catch (err) { alert('Gagal menghapus'); }
 }
@@ -383,7 +400,7 @@ async function handleBulkDelete(category) {
     const ids = Array.from(checkboxes).map(cb => cb.value);
 
     try {
-        const res = await fetch('/api/admin/bulk-delete', {
+        const res = await authFetch('/api/admin/bulk-delete', {
             method: 'DELETE',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ids, category })
@@ -442,7 +459,7 @@ function showToast(message, duration = 3000) {
 async function initMaintenanceToggle() {
     try {
         // 1. Cek session username
-        const sessionRes = await fetch('/api/admin/session');
+        const sessionRes = await authFetch('/api/admin/session');
         if (!sessionRes.ok) return;
         const sessionData = await sessionRes.json();
 
@@ -453,7 +470,7 @@ async function initMaintenanceToggle() {
         if (section) section.style.display = '';
 
         // 3. Load status maintenance dari DB
-        const maintRes = await fetch('/api/admin/maintenance');
+        const maintRes = await authFetch('/api/admin/maintenance');
         if (!maintRes.ok) return;
         const maintData = await maintRes.json();
 
@@ -469,17 +486,11 @@ async function initMaintenanceToggle() {
             toggle.disabled = true;
 
             try {
-                const res = await fetch('/api/config', {
+                const res = await authFetch('/api/config', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ is_maintenance: newValue })
                 });
-
-                if (!(res.headers.get('content-type') || '').includes('application/json')) {
-                    showToast('❌ Session expired. Silakan login ulang.');
-                    toggle.checked = !newValue;
-                    return;
-                }
                 const data = await res.json();
 
                 if (res.status === 403) {
@@ -516,7 +527,7 @@ function updateMaintenanceStatusText(el, isActive) {
 
 async function loadWmConfig() {
     try {
-        const res = await fetch('/api/wm-config');
+        const res = await authFetch('/api/wm-config');
         const data = await res.json();
         if (data.wm_text) document.getElementById('wmTextInput').value = data.wm_text;
     } catch (e) { console.error(e); }
@@ -536,16 +547,11 @@ async function handleChangePassword() {
     status.innerHTML = '<span>🔄 Memproses...</span>';
 
     try {
-        const res = await fetch('/api/change-password', {
+        const res = await authFetch('/api/change-password', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ oldPassword: oldPass, newPassword: newPass })
         });
-
-        if (!res.ok && res.status === 401 || !(res.headers.get('content-type') || '').includes('application/json')) {
-            status.innerHTML = '<span class="error-message">❌ Session expired. Silakan login ulang.</span>';
-            return;
-        }
         const data = await res.json();
 
         if (data.success) {
@@ -573,16 +579,11 @@ async function handleChangePin() {
     status.innerHTML = '<span>🔄 Memproses...</span>';
 
     try {
-        const res = await fetch('/api/change-pin', {
+        const res = await authFetch('/api/change-pin', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ oldPin: oldPin, newPin: newPin })
         });
-
-        if (!res.ok && res.status === 401 || !(res.headers.get('content-type') || '').includes('application/json')) {
-            status.innerHTML = '<span class="error-message">❌ Session expired. Silakan login ulang.</span>';
-            return;
-        }
         const data = await res.json();
 
         if (data.success) {
@@ -603,7 +604,7 @@ async function handleUpdateWm() {
 
     status.innerHTML = '<span>🔄 Saving...</span>';
     try {
-        const res = await fetch('/api/admin/update-wm', {
+        const res = await authFetch('/api/admin/update-wm', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ wm_text: text })
