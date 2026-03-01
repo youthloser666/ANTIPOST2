@@ -57,6 +57,54 @@ function initInfoReveal() {
     });
 }
 
+function initContactReveal() {
+    gsap.to('.footer-contact-label', {
+        opacity: 1, y: 0,
+        duration: 0.7, ease: 'power2.out',
+        scrollTrigger: {
+            trigger: '.footer-contact',
+            start: 'top 85%',
+            toggleActions: 'play none none reset'
+        }
+    });
+    gsap.to('.footer-contact-heading', {
+        opacity: 1, y: 0,
+        duration: 1, ease: 'power3.out', delay: 0.15,
+        scrollTrigger: {
+            trigger: '.footer-contact',
+            start: 'top 85%',
+            toggleActions: 'play none none reset'
+        }
+    });
+    gsap.to('.footer-form input, .footer-form textarea', {
+        opacity: 1, y: 0,
+        duration: 0.7, ease: 'power2.out', stagger: 0.12, delay: 0.3,
+        scrollTrigger: {
+            trigger: '.footer-contact',
+            start: 'top 80%',
+            toggleActions: 'play none none reset'
+        }
+    });
+    gsap.to('.footer-form button', {
+        opacity: 1, y: 0,
+        duration: 0.6, ease: 'power2.out', delay: 0.55,
+        scrollTrigger: {
+            trigger: '.footer-contact',
+            start: 'top 80%',
+            toggleActions: 'play none none reset'
+        }
+    });
+    gsap.to('.footer-contact-note', {
+        opacity: 1,
+        duration: 0.6, ease: 'power2.out', delay: 0.7,
+        scrollTrigger: {
+            trigger: '.footer-contact',
+            start: 'top 80%',
+            toggleActions: 'play none none reset'
+        }
+    });
+}
+
 window.addEventListener('load', () => {
     const _origOpenView = window.openView;
     const _origCloseModal = window.closeModal;
@@ -277,6 +325,7 @@ window.addEventListener('DOMContentLoaded', () => {
     ]).then(() => {
         initGalleryReveal();
         initInfoReveal();
+        initContactReveal();
     });
 });
 
@@ -340,4 +389,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fallback: paksa hide setelah 4s apapun yang terjadi
     setTimeout(hideSplash, 4000);
+
+    // Contact form — kirim pesan langsung via email
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const subject = contactForm.querySelector('[name="subject"]').value.trim();
+            const message = contactForm.querySelector('[name="message"]').value.trim();
+            if (!subject || !message) return;
+
+            const mailto = `mailto:galleryantipost@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
+            window.open(mailto, '_blank');
+            contactForm.reset();
+        });
+    }
 });

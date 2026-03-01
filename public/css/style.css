@@ -233,7 +233,7 @@ header {
     gap: 30px;
     align-items: flex-start;
     position: relative;
-    z-index: 2000;
+    z-index: 5;
 }
 
 .info-column {
@@ -302,6 +302,7 @@ header {
     padding-top: 40px;
     padding-bottom: 0;
     position: relative;
+    z-index: 0;
 }
 
 .footer-marquee-track {
@@ -353,9 +354,10 @@ header {
     align-items: center;
     padding: 100px 60px 80px;
     gap: 60px;
-    margin-top: -80px;
+    background: black;
+    margin-top: -60px;
     position: relative;
-    z-index: 1;
+    z-index: 2;
     border-top: none;
 }
 
@@ -394,7 +396,8 @@ header {
     gap: 0;
 }
 
-.footer-form input[type="email"] {
+.footer-form input[type="text"],
+.footer-form textarea {
     background: transparent;
     border: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.3);
@@ -408,11 +411,20 @@ header {
     transition: border-color 0.3s;
 }
 
-.footer-form input[type="email"]:focus {
+.footer-form textarea {
+    resize: none;
+    min-height: 60px;
+    line-height: 1.5;
+    margin-top: 10px;
+}
+
+.footer-form input[type="text"]:focus,
+.footer-form textarea:focus {
     border-bottom-color: rgba(255, 255, 255, 0.8);
 }
 
-.footer-form input[type="email"]::placeholder {
+.footer-form input[type="text"]::placeholder,
+.footer-form textarea::placeholder {
     color: rgba(255, 255, 255, 0.25);
     font-size: 12px;
     letter-spacing: 3px;
@@ -617,7 +629,7 @@ header {
     }
 
     .footer-marquee-track span {
-        font-size: clamp(60px, 18vw, 100px);
+        font-size: clamp(190px, 18vw, 100px);
     }
 
     .footer-contact {
@@ -625,7 +637,7 @@ header {
         padding: 60px 28px 48px;
         gap: 48px;
         align-items: flex-start;
-        margin-top: -40px;
+        margin-top: -25px;
         border-top: none;
     }
 
@@ -678,6 +690,32 @@ header {
 }
 
 #close-modal {
+    opacity: 0;
+}
+
+/* Contact section initial states */
+.footer-contact-label {
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+.footer-contact-heading {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
+.footer-form input,
+.footer-form textarea {
+    opacity: 0;
+    transform: translateY(16px);
+}
+
+.footer-form button {
+    opacity: 0;
+    transform: translateY(12px);
+}
+
+.footer-contact-note {
     opacity: 0;
 }
 
