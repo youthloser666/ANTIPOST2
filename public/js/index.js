@@ -58,37 +58,37 @@ function initInfoReveal() {
 }
 
 window.addEventListener('load', () => {
-    const _origOpenView   = window.openView;
+    const _origOpenView = window.openView;
     const _origCloseModal = window.closeModal;
 
-    window.openView = function(src, title) {
+    window.openView = function (src, title) {
         _origOpenView(src, title);
-        const modal    = document.getElementById('image-modal');
+        const modal = document.getElementById('image-modal');
         const modalImg = document.getElementById('modal-img');
-        const caption  = document.getElementById('modal-caption');
+        const caption = document.getElementById('modal-caption');
         const closeBtn = document.getElementById('close-modal');
-        gsap.set(modal,    { opacity: 0 });
+        gsap.set(modal, { opacity: 0 });
         gsap.set(modalImg, { opacity: 0, scale: 0.94, y: 12 });
-        gsap.set(caption,  { opacity: 0 });
+        gsap.set(caption, { opacity: 0 });
         gsap.set(closeBtn, { opacity: 0 });
-        gsap.to(modal,    { opacity: 1, duration: 0.28, ease: 'power2.out' });
+        gsap.to(modal, { opacity: 1, duration: 0.28, ease: 'power2.out' });
         gsap.to(modalImg, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.06 });
-        gsap.to(caption,  { opacity: 1, duration: 0.4, ease: 'power2.out', delay: 0.2 });
+        gsap.to(caption, { opacity: 1, duration: 0.4, ease: 'power2.out', delay: 0.2 });
         gsap.to(closeBtn, { opacity: 1, duration: 0.3, delay: 0.22 });
     };
 
-    window.closeModal = function() {
-        const modal    = document.getElementById('image-modal');
+    window.closeModal = function () {
+        const modal = document.getElementById('image-modal');
         const modalImg = document.getElementById('modal-img');
-        const caption  = document.getElementById('modal-caption');
+        const caption = document.getElementById('modal-caption');
         const closeBtn = document.getElementById('close-modal');
         gsap.to(modal, {
             opacity: 0, duration: 0.22, ease: 'power2.in',
             onComplete() {
                 _origCloseModal();
-                gsap.set(modal,    { opacity: 1 });
+                gsap.set(modal, { opacity: 1 });
                 gsap.set(modalImg, { opacity: 0, scale: 0.94, y: 12 });
-                gsap.set(caption,  { opacity: 0 });
+                gsap.set(caption, { opacity: 0 });
                 gsap.set(closeBtn, { opacity: 0 });
             }
         });
@@ -130,9 +130,9 @@ async function fetchWmConfig() {
 
 function getCloudinaryUrl(url, mode) {
     if (!url || !url.includes('cloudinary.com')) return url;
-    
+
     let params = 'f_auto,q_auto';
-    
+
     if (mode === 'thumb') {
         params = 'f_auto,q_auto,w_600,h_750,c_fill';
     } else if (mode === 'full') {
@@ -140,7 +140,7 @@ function getCloudinaryUrl(url, mode) {
             params = `f_auto,q_auto,l_text:Arial_20_bold:${encodeURIComponent(globalWmText)},co_white,o_30,g_south_east,x_10,y_10`;
         }
     }
-    
+
     return url.replace('/upload/', `/upload/${params}/`);
 }
 
@@ -171,7 +171,7 @@ function resetZoom() {
     if (!modalImg || !modalCont) return;
     isZoomed = false;
     isDragging = false;
-    translateX = 0; 
+    translateX = 0;
     translateY = 0;
     modalImg.classList.remove('zoomed');
     modalImg.style.transform = `translate(0px, 0px) scale(1)`;
@@ -211,19 +211,19 @@ const moveDrag = (e) => {
 
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
+
     translateX = clientX - startX;
     translateY = clientY - startY;
-    
+
     // Apply transformasi (translate dibagi scale agar movement terasa natural)
     if (modalImg) {
         modalImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${ZOOM_SCALE})`;
     }
 };
 
-const stopDrag = () => { 
-    isDragging = false; 
-    if(isZoomed && modalCont) modalCont.style.cursor = 'move';
+const stopDrag = () => {
+    isDragging = false;
+    if (isZoomed && modalCont) modalCont.style.cursor = 'move';
 };
 
 // Listener untuk Mouse (PC) & Touch (Mobile)
@@ -238,9 +238,9 @@ window.addEventListener('mousemove', moveDrag);
 window.addEventListener('mouseup', stopDrag);
 
 // Close functions
-function closeModal() { 
-    if (modal) modal.style.display = "none"; 
-    document.body.style.overflow = "auto"; 
+function closeModal() {
+    if (modal) modal.style.display = "none";
+    document.body.style.overflow = "auto";
     resetZoom();
 }
 
@@ -250,7 +250,7 @@ if (closeModalBtn) {
 }
 
 if (modal) {
-    modal.onclick = (e) => { if(e.target === modal || e.target === modalCont) closeModal(); };
+    modal.onclick = (e) => { if (e.target === modal || e.target === modalCont) closeModal(); };
 }
 
 // DATA LOADING
@@ -306,7 +306,7 @@ document.querySelectorAll('.nav-link').forEach(anchor => {
         if (targetElement) {
             // Tentukan offset berdasarkan tinggi header (110px desktop, 85px mobile)
             const headerOffset = window.innerWidth <= 768 ? 85 : 110;
-            const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY; 
+            const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
             const offsetPosition = elementPosition - headerOffset;
 
             window.scrollTo({
@@ -319,12 +319,25 @@ document.querySelectorAll('.nav-link').forEach(anchor => {
 
 const logoToTop = document.getElementById('back-to-top');
 if (logoToTop) {
-    logoToTop.addEventListener('click', function(e) {
+    logoToTop.addEventListener('click', function (e) {
         e.preventDefault(); // Mencegah munculnya '#' di URL
-        
+
         window.scrollTo({
             top: 0,
             behavior: 'smooth' // Scroll meluncur halus ke atas
         });
     });
 }
+
+// Splash — pakai DOMContentLoaded + fallback, bukan 'load'
+// supaya tidak stuck kalau ada asset yang lambat/gagal load
+document.addEventListener('DOMContentLoaded', () => {
+    const splash = document.getElementById('splash');
+    const hideSplash = () => { if (splash) splash.classList.add('hidden'); };
+
+    // Normal: hide setelah 1.2s
+    setTimeout(hideSplash, 1200);
+
+    // Fallback: paksa hide setelah 4s apapun yang terjadi
+    setTimeout(hideSplash, 4000);
+});

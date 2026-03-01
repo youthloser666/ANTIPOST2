@@ -1,23 +1,34 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ANTIPOST GALLERY</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
+
 <body>
 
     <header>
         <a href="#" id="back-to-top" class="logo2"><img src="images/img/logo.gif" alt="Logo"></a>
         <nav class="nav-container">
-            <a href="#artwork-section" class="nav-link"><div class="nav-item">[ WORKS ]</div></a>
-            <a href="#commission-gallery-section" class="nav-link"><div class="nav-item">[ ARTWORK ]</div></a>
-            <a href="#info-section" class="nav-link"><div class="nav-item">[ INFO ]</div></a>
+            <a href="#artwork-section" class="nav-link">
+                <div class="nav-item">[ WORKS ]</div>
+            </a>
+            <a href="#commission-gallery-section" class="nav-link">
+                <div class="nav-item">[ ARTWORK ]</div>
+            </a>
+            <a href="#info-section" class="nav-link">
+                <div class="nav-item">[ INFO ]</div>
+            </a>
         </nav>
         <div class="logo">CREATIVE<br>DESIGNER</div>
     </header>
-
+    <div id="splash">
+        <img src="images/img/logo.gif" alt="ANTIPOST">
+        <div id="splash-bar"></div>
+    </div>
     <div class="biglogo-container">
         <div class="biglogo-wrapper">
             <img src="images/img/biglogo.png" alt="Big Logo" class="layer-base" id="parallax-logo">
@@ -66,13 +77,58 @@
                 <div class="info-list">
                     <div><a href="https://instagram.com/gallery.antipost" target="_blank">Instagram</a></div>
                     <div><a href="https://www.tiktok.com/@antipostgallery" target="_blank">TIKTOK</a></div>
-                    <div><a href="mailto:galleryantipost@gmail.com">EMAIL</a></div>
+                    <div><a
+                            href="/cdn-cgi/l/email-protection#3f585e53535a4d465e514b564f504c4b7f58525e5653115c5052">EMAIL</a>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="footer-banner-container">
-            <img src="images/img/footer.png" alt="ANTIPOST GALLERY">
+        <!-- FOOTER -->
+        <div class="footer-new">
+
+            <!-- 1. MARQUEE -->
+            <div class="footer-marquee-section">
+                <div class="footer-marquee-track">
+                    <span>ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY —
+                        ANTIPOST GALLERY — </span>
+                    <span>ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY —
+                        ANTIPOST GALLERY — </span>
+                </div>
+                <div class="footer-marquee-track reverse">
+                    <span>ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY —
+                        ANTIPOST GALLERY — </span>
+                    <span>ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY — ANTIPOST GALLERY —
+                        ANTIPOST GALLERY — </span>
+                </div>
+            </div>
+
+            <!-- 2. EMAIL SECTION -->
+            <div class="footer-contact">
+                <div class="footer-contact-left">
+                    <div class="footer-contact-label">STAY IN TOUCH</div>
+                    <div class="footer-contact-heading">GET IN<br>CONTACT</div>
+                </div>
+                <div class="footer-contact-right">
+                    <form class="footer-form" action="mailto:galleryantipost@gmail.com" method="post"
+                        enctype="text/plain">
+                        <input type="email" name="email" placeholder="TEXT ME" required />
+                        <button type="submit">SEND →</button>
+                    </form>
+                    <div class="footer-contact-note">We'll get back to you as soon as possible.</div>
+                </div>
+            </div>
+
+            <!-- 3. FOOTER BAR -->
+            <div class="footer-bar">
+                <div class="footer-bar-left">ANTIPOST GALLERY © 2025</div>
+                <div class="footer-bar-right">
+                    <a href="https://instagram.com/gallery.antipost" target="_blank">Instagram</a>
+                    <a href="https://www.tiktok.com/@antipostgallery" target="_blank">TikTok</a>
+                    <a href="mailto:galleryantipost@gmail.com">Email</a>
+                </div>
+            </div>
+
         </div>
     </div>
 
@@ -89,4 +145,5 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
     <script src="/js/index.js"></script>
 </body>
+
 </html>
