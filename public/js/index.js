@@ -1,108 +1,39 @@
 /* ============================================
-   GSAP ANIMATIONS — tambahan di atas kode original
+   GSAP ANIMATIONS + FULL INIT
    ============================================ */
-gsap.registerPlugin(ScrollTrigger);
-
-window.addEventListener('DOMContentLoaded', () => {
-    gsap.to('header', {
-        translateY: 0, duration: 0.9, ease: 'power3.out', delay: 0.1
-    });
-    gsap.fromTo('.biglogo-wrapper',
-        { opacity: 0, clipPath: 'inset(6% 0 0 0)' },
-        { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 1.3, ease: 'power3.out', delay: 0.45 }
-    );
-    gsap.fromTo('.nav-link',
-        { opacity: 0, y: -8 },
-        { opacity: 1, y: 0, stagger: 0.08, duration: 0.5, ease: 'power2.out', delay: 0.7 }
-    );
-});
+gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
 function initGalleryReveal() {
     ['#image-gallery', '#commission-gallery'].forEach(sel => {
         const imgs = document.querySelectorAll(sel + ' img');
         if (!imgs.length) return;
         gsap.to(imgs, {
-            opacity: 1,
-            clipPath: 'inset(0% 0 0 0)',
-            duration: 0.9,
-            ease: 'power3.out',
+            opacity: 1, clipPath: 'inset(0% 0 0 0)',
+            duration: 0.9, ease: 'power3.out',
             stagger: { amount: 1.0, from: 'start' },
-            scrollTrigger: {
-                trigger: sel,
-                start: 'top 88%',
-                toggleActions: 'play none none reset'
-            }
+            scrollTrigger: { trigger: sel, start: 'top 88%', toggleActions: 'play none none reset' }
         });
     });
 }
 
 function initInfoReveal() {
     gsap.to('.info-header', {
-        opacity: 1, y: 0,
-        duration: 0.9, ease: 'power3.out', stagger: 0.18,
-        scrollTrigger: {
-            trigger: '.info-container',
-            start: 'top 85%',
-            toggleActions: 'play none none reset'
-        }
+        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out', stagger: 0.18,
+        scrollTrigger: { trigger: '.info-container', start: 'top 85%', toggleActions: 'play none none reset' }
     });
     gsap.to('.info-list', {
-        opacity: 1, y: 0,
-        duration: 0.7, ease: 'power2.out', stagger: 0.14,
-        scrollTrigger: {
-            trigger: '.info-container',
-            start: 'top 78%',
-            toggleActions: 'play none none reset'
-        }
+        opacity: 1, y: 0, duration: 0.7, ease: 'power2.out', stagger: 0.14,
+        scrollTrigger: { trigger: '.info-container', start: 'top 78%', toggleActions: 'play none none reset' }
     });
 }
 
 function initContactReveal() {
-    gsap.to('.footer-contact-label', {
-        opacity: 1, y: 0,
-        duration: 0.7, ease: 'power2.out',
-        scrollTrigger: {
-            trigger: '.footer-contact',
-            start: 'top 85%',
-            toggleActions: 'play none none reset'
-        }
-    });
-    gsap.to('.footer-contact-heading', {
-        opacity: 1, y: 0,
-        duration: 1, ease: 'power3.out', delay: 0.15,
-        scrollTrigger: {
-            trigger: '.footer-contact',
-            start: 'top 85%',
-            toggleActions: 'play none none reset'
-        }
-    });
-    gsap.to('.footer-form input, .footer-form textarea', {
-        opacity: 1, y: 0,
-        duration: 0.7, ease: 'power2.out', stagger: 0.12, delay: 0.3,
-        scrollTrigger: {
-            trigger: '.footer-contact',
-            start: 'top 80%',
-            toggleActions: 'play none none reset'
-        }
-    });
-    gsap.to('.footer-form button', {
-        opacity: 1, y: 0,
-        duration: 0.6, ease: 'power2.out', delay: 0.55,
-        scrollTrigger: {
-            trigger: '.footer-contact',
-            start: 'top 80%',
-            toggleActions: 'play none none reset'
-        }
-    });
-    gsap.to('.footer-contact-note', {
-        opacity: 1,
-        duration: 0.6, ease: 'power2.out', delay: 0.7,
-        scrollTrigger: {
-            trigger: '.footer-contact',
-            start: 'top 80%',
-            toggleActions: 'play none none reset'
-        }
-    });
+    const ct = { trigger: '.footer-contact', toggleActions: 'play none none reset' };
+    gsap.to('.footer-contact-label', { opacity: 1, y: 0, duration: .7, ease: 'power2.out', scrollTrigger: { ...ct, start: 'top 85%' } });
+    gsap.to('.footer-contact-heading', { opacity: 1, y: 0, duration: 1, ease: 'power3.out', delay: .15, scrollTrigger: { ...ct, start: 'top 85%' } });
+    gsap.to('.footer-form input, .footer-form textarea', { opacity: 1, y: 0, duration: .7, ease: 'power2.out', stagger: .12, delay: .3, scrollTrigger: { ...ct, start: 'top 80%' } });
+    gsap.to('.footer-form button', { opacity: 1, y: 0, duration: .6, ease: 'power2.out', delay: .55, scrollTrigger: { ...ct, start: 'top 80%' } });
+    gsap.to('.footer-contact-note', { opacity: 1, duration: .6, ease: 'power2.out', delay: .7, scrollTrigger: { ...ct, start: 'top 80%' } });
 }
 
 window.addEventListener('load', () => {
@@ -111,33 +42,24 @@ window.addEventListener('load', () => {
 
     window.openView = function (src, title) {
         _origOpenView(src, title);
-        const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-img');
-        const caption = document.getElementById('modal-caption');
-        const closeBtn = document.getElementById('close-modal');
-        gsap.set(modal, { opacity: 0 });
-        gsap.set(modalImg, { opacity: 0, scale: 0.94, y: 12 });
-        gsap.set(caption, { opacity: 0 });
-        gsap.set(closeBtn, { opacity: 0 });
-        gsap.to(modal, { opacity: 1, duration: 0.28, ease: 'power2.out' });
-        gsap.to(modalImg, { opacity: 1, scale: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.06 });
-        gsap.to(caption, { opacity: 1, duration: 0.4, ease: 'power2.out', delay: 0.2 });
-        gsap.to(closeBtn, { opacity: 1, duration: 0.3, delay: 0.22 });
+        const modal = document.getElementById('image-modal'), modalImg = document.getElementById('modal-img'),
+            caption = document.getElementById('modal-caption'), closeBtn = document.getElementById('close-modal');
+        gsap.set(modal, { opacity: 0 }); gsap.set(modalImg, { opacity: 0, scale: .94, y: 12 });
+        gsap.set(caption, { opacity: 0 }); gsap.set(closeBtn, { opacity: 0 });
+        gsap.to(modal, { opacity: 1, duration: .28, ease: 'power2.out' });
+        gsap.to(modalImg, { opacity: 1, scale: 1, y: 0, duration: .5, ease: 'power3.out', delay: .06 });
+        gsap.to(caption, { opacity: 1, duration: .4, ease: 'power2.out', delay: .2 });
+        gsap.to(closeBtn, { opacity: 1, duration: .3, delay: .22 });
     };
 
     window.closeModal = function () {
-        const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-img');
-        const caption = document.getElementById('modal-caption');
-        const closeBtn = document.getElementById('close-modal');
+        const modal = document.getElementById('image-modal'), modalImg = document.getElementById('modal-img'),
+            caption = document.getElementById('modal-caption'), closeBtn = document.getElementById('close-modal');
         gsap.to(modal, {
-            opacity: 0, duration: 0.22, ease: 'power2.in',
-            onComplete() {
+            opacity: 0, duration: .22, ease: 'power2.in', onComplete() {
                 _origCloseModal();
-                gsap.set(modal, { opacity: 1 });
-                gsap.set(modalImg, { opacity: 0, scale: 0.94, y: 12 });
-                gsap.set(caption, { opacity: 0 });
-                gsap.set(closeBtn, { opacity: 0 });
+                gsap.set(modal, { opacity: 1 }); gsap.set(modalImg, { opacity: 0, scale: .94, y: 12 });
+                gsap.set(caption, { opacity: 0 }); gsap.set(closeBtn, { opacity: 0 });
             }
         });
     };
@@ -317,8 +239,29 @@ async function loadData(api, gridId, folder) {
     } catch (err) { console.error(err); }
 }
 
-window.addEventListener('DOMContentLoaded', () => {
-    fetchWmConfig(); // Ambil config watermark
+
+// ── SINGLE DOMContentLoaded ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+
+    // SPLASH
+    const splash = document.getElementById('splash');
+    const hideSplash = () => { if (splash) splash.classList.add('hidden'); };
+    setTimeout(hideSplash, 1200);
+    setTimeout(hideSplash, 4000); // fallback
+
+    // HEADER + HERO GSAP
+    gsap.to('header', { translateY: 0, duration: .9, ease: 'power3.out', delay: .1 });
+    gsap.fromTo('.biglogo-wrapper',
+        { opacity: 0, clipPath: 'inset(6% 0 0 0)' },
+        { opacity: 1, clipPath: 'inset(0% 0 0 0)', duration: 1.3, ease: 'power3.out', delay: .45 }
+    );
+    gsap.fromTo('.nav-link',
+        { opacity: 0, y: -8 },
+        { opacity: 1, y: 0, stagger: .08, duration: .5, ease: 'power2.out', delay: .7 }
+    );
+
+    // LOAD DATA
+    fetchWmConfig();
     Promise.all([
         loadData('/api/personals', 'image-gallery', 'personals'),
         loadData('/api/comission_works', 'commission-gallery', 'comission_works')
@@ -327,81 +270,88 @@ window.addEventListener('DOMContentLoaded', () => {
         initInfoReveal();
         initContactReveal();
     });
-});
 
-const headerBlock = document.querySelector('.section-divider-block');
-
-// Kita pantau posisi elemen terhadap top header (85px di mobile, 110px di desktop)
-window.addEventListener('scroll', () => {
-    if (!headerBlock) return;
-    const stickyPos = headerBlock.getBoundingClientRect().top;
-    const offset = window.innerWidth <= 768 ? 85 : 110;
-
-    // Jika posisi elemen <= batas sticky, tambahkan class is-pinned
-    if (stickyPos <= offset) {
-        headerBlock.classList.add('is-pinned');
-    } else {
-        headerBlock.classList.remove('is-pinned');
-    }
-});
-
-document.querySelectorAll('.nav-link').forEach(anchor => {
-    anchor.addEventListener('click', function (e) {
-        e.preventDefault(); // Mencegah lompatan instan
-
-        const targetId = this.getAttribute('href');
-        const targetElement = document.querySelector(targetId);
-
-        if (targetElement) {
-            // Tentukan offset berdasarkan tinggi header (110px desktop, 85px mobile)
-            const headerOffset = window.innerWidth <= 768 ? 85 : 110;
-            const elementPosition = targetElement.getBoundingClientRect().top + window.scrollY;
-            const offsetPosition = elementPosition - headerOffset;
-
-            window.scrollTo({
-                top: offsetPosition,
-                behavior: 'smooth'
-            });
-        }
-    });
-});
-
-const logoToTop = document.getElementById('back-to-top');
-if (logoToTop) {
-    logoToTop.addEventListener('click', function (e) {
-        e.preventDefault(); // Mencegah munculnya '#' di URL
-
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth' // Scroll meluncur halus ke atas
-        });
-    });
-}
-
-// Splash — pakai DOMContentLoaded + fallback, bukan 'load'
-// supaya tidak stuck kalau ada asset yang lambat/gagal load
-document.addEventListener('DOMContentLoaded', () => {
-    const splash = document.getElementById('splash');
-    const hideSplash = () => { if (splash) splash.classList.add('hidden'); };
-
-    // Normal: hide setelah 1.2s
-    setTimeout(hideSplash, 1200);
-
-    // Fallback: paksa hide setelah 4s apapun yang terjadi
-    setTimeout(hideSplash, 4000);
-
-    // Contact form — kirim pesan langsung via email
+    // CONTACT FORM
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
+        contactForm.addEventListener('submit', e => {
             e.preventDefault();
             const subject = contactForm.querySelector('[name="subject"]').value.trim();
             const message = contactForm.querySelector('[name="message"]').value.trim();
             if (!subject || !message) return;
-
-            const mailto = `mailto:galleryantipost@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`;
-            window.open(mailto, '_blank');
+            window.open(`mailto:galleryantipost@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(message)}`, '_blank');
             contactForm.reset();
         });
     }
+});
+
+// ── ACTIVE NAV + STICKY INVERT ──────────────────────────────────────
+const headerBlock = document.querySelector('.section-divider-block');
+const _sections = [
+    { id: 'artwork-section', href: '#artwork-section' },
+    { id: 'commission-gallery-section', href: '#commission-gallery-section' },
+    { id: 'info-section', href: '#info-section' },
+];
+
+let _navScrolling = false;
+let _navScrollTimer = null;
+
+function updateActiveNav() {
+    if (_navScrolling) return;
+    const offset = window.innerWidth <= 768 ? 85 : 110;
+    const scrollY = window.scrollY + offset + 40;
+    if (headerBlock) {
+        headerBlock.classList.toggle('is-pinned', headerBlock.getBoundingClientRect().top <= offset);
+    }
+    let current = null;
+    _sections.forEach(s => {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top + window.scrollY <= scrollY) current = s.href;
+    });
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    if (current) {
+        const a = document.querySelector('a[href="' + current + '"]');
+        if (a) a.classList.add('active');
+    }
+}
+
+window.addEventListener('scroll', updateActiveNav, { passive: true });
+updateActiveNav();
+
+// ── SMOOTH SCROLL NAV ───────────────────────────────────────────────
+document.querySelectorAll('.nav-link').forEach(anchor => {
+    anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+        this.classList.add('active');
+        _navScrolling = true;
+        clearTimeout(_navScrollTimer);
+        _navScrollTimer = setTimeout(() => { _navScrolling = false; }, 1000);
+
+        // Click animation on the text inside nav-link
+        const navText = this.querySelector('.nav-item');
+        if (navText) {
+            gsap.fromTo(navText,
+                { scale: 0.95, y: 2 },
+                { scale: 1, y: 0, duration: 0.4, ease: "back.out(2)" }
+            );
+        }
+
+        const targetEl = document.querySelector(this.getAttribute('href'));
+        if (!targetEl) return;
+
+        const ho = window.innerWidth <= 768 ? 85 : 110;
+
+        // Gunakan GSAP ScrollToPlugin untuk garansi scroll jalan dari posisi mana saja
+        gsap.to(window, {
+            duration: 1.2,
+            scrollTo: { y: targetEl, offsetY: ho },
+            ease: "power3.inOut"
+        });
+    });
+});
+
+document.getElementById('back-to-top')?.addEventListener('click', e => {
+    e.preventDefault();
+    gsap.to(window, { duration: 1, scrollTo: 0, ease: "power3.inOut" });
 });

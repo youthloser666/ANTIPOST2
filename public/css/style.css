@@ -62,11 +62,41 @@ header {
 
 .nav-item {
     font-family: 'font1', sans-serif;
-    color: white;
+    color: rgba(255,255,255,0.45);
     font-size: 16px;
     font-weight: normal;
     letter-spacing: 2px;
     cursor: pointer;
+    transition: color 0.25s, letter-spacing 0.25s;
+    position: relative;
+    padding-bottom: 3px;
+}
+
+/* Underline slide */
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 0; height: 1px;
+    background: white;
+    transition: width 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.nav-link:hover .nav-item {
+    color: white;
+}
+
+.nav-link:hover .nav-item::after {
+    width: 100%;
+}
+
+/* Active state saat section yang bersangkutan sedang aktif */
+.nav-link.active .nav-item {
+    color: white;
+}
+
+.nav-link.active .nav-item::after {
+    width: 100%;
 }
 
 .logo {
